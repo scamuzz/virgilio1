@@ -146,12 +146,26 @@
     .legend-swatch.red   { background: #fff5f5; border: 2.5px solid #ef9a9a; }
 
     /* ── MONTH TABS ── */
-    .month-tabs {
-      display: flex; gap: 8px; overflow-x: auto;
-      padding-bottom: 10px; margin-bottom: 6px;
+    .month-tabs-wrap {
+      /* margine negativo per uscire dal padding del container
+         e riempire tutta la larghezza, poi padding interno
+         per non tagliare bordi/ombre dei tab */
+      margin: 0 -12px;
+      padding: 4px 12px 10px;
+      overflow-x: auto;
       scrollbar-width: none;
+      margin-bottom: 6px;
     }
-    .month-tabs::-webkit-scrollbar { display: none; }
+    .month-tabs-wrap::-webkit-scrollbar { display: none; }
+
+    .month-tabs {
+      display: flex; gap: 8px;
+      /* un piccolo padding-right extra garantisce che l'ultimo tab
+         non venga mai tagliato anche su schermi molto stretti */
+      padding-right: 12px;
+      width: max-content;
+      min-width: 100%;
+    }
 
     .month-tab {
       flex-shrink: 0;
@@ -215,7 +229,7 @@
       box-shadow: 0 3px 16px rgba(239,154,154,0.13);
     }
 
-    /* ✨ Evidenziazione extra se sei tu il prenotato */
+    /* ✨ Evidenziazione extra se sei tu tra gli iscritti */
     .week-card.week-booked.has-me {
       border-color: #43a047;
       box-shadow: 0 3px 18px rgba(67,160,71,0.28);
@@ -334,8 +348,10 @@
     <span class="legend-item"><span class="legend-swatch red"></span>Libera</span>
   </div>
 
-  <!-- Tab mesi -->
-  <div class="month-tabs" id="month-tabs"></div>
+  <!-- Tab mesi — il wrapper gestisce lo scroll senza tagliare -->
+  <div class="month-tabs-wrap">
+    <div class="month-tabs" id="month-tabs"></div>
+  </div>
 
   <!-- Settimane del mese attivo -->
   <div id="weeks-container"></div>
@@ -424,7 +440,6 @@
     return !!me && getEntries(id).some(([,n]) => n.toLowerCase() === me);
   }
 
-  /* Conta settimane prenotate nel mese per il tab pill */
   function bookedInMonth(month) {
     return WEEKS.filter(w => w.month === month && getEntries(w.id).length > 0).length;
   }
@@ -470,9 +485,7 @@
         const names     = entries.map(([,n]) => n);
         const joined    = isJoined(week.id);
 
-        /* 🟢 verde se almeno un iscritto, 🔴 rosso se nessuno */
         const bookingClass = names.length > 0 ? 'week-booked' : 'week-empty';
-        /* bordo verde più intenso se sei tu tra gli iscritti */
         const meClass      = joined ? ' has-me' : '';
         const statusDot    = names.length > 0 ? '🟢' : '🔴';
 
