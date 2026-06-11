@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>🏢 Virgilio 1 — Portale Condominiale</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #e8f4fd;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #1a3a5c 0%, #0077b6 50%, #00b4d8 100%);
+      color: white;
+      padding: 52px 20px 36px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.10), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.07), transparent);
+    }
+    .header::after {
+      content: '';
+      position: absolute; bottom: 0; left: -60%; right: -60%; height: 50px;
+      background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,255,255,0.15), transparent);
+      animation: reflect 5s ease-in-out infinite;
+    }
+    @keyframes reflect {
+      0%,100% { transform: scaleX(1);    opacity: 0.5; }
+      50%      { transform: scaleX(1.06); opacity: 1;   }
+    }
+
+    .header .logo { font-size: 4rem; display: block; margin-bottom: 14px; line-height: 1; position: relative; }
+    .header h1 {
+      font-size: 2rem; font-weight: 900; letter-spacing: 1px;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.25); position: relative;
+    }
+    .header .subtitle {
+      font-size: 0.85rem; opacity: 0.88; margin-top: 8px;
+      font-weight: 500; letter-spacing: 0.4px; position: relative;
+    }
+    .header .address {
+      font-size: 0.75rem; opacity: 0.7; margin-top: 4px;
+      font-weight: 400; position: relative;
+    }
+
+    .particles {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+    }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.18); animation: floatUp linear infinite;
+    }
+    .particle:nth-child(1) { width:8px;  height:8px;  left:10%; bottom:0; animation-duration:6s;   animation-delay:0s;   }
+    .particle:nth-child(2) { width:5px;  height:5px;  left:25%; bottom:0; animation-duration:4.5s; animation-delay:1s;   }
+    .particle:nth-child(3) { width:10px; height:10px; left:42%; bottom:0; animation-duration:7s;   animation-delay:2s;   }
+    .particle:nth-child(4) { width:6px;  height:6px;  left:60%; bottom:0; animation-duration:5s;   animation-delay:0.5s; }
+    .particle:nth-child(5) { width:12px; height:12px; left:75%; bottom:0; animation-duration:8s;   animation-delay:1.5s; }
+    .particle:nth-child(6) { width:4px;  height:4px;  left:88%; bottom:0; animation-duration:4s;   animation-delay:3s;   }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) scale(1);    opacity: 0.8; }
+      100% { transform: translateY(-120px) scale(0.5); opacity: 0; }
+    }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #1a3a5c 0%, #0077b6 50%, #00b4d8 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 540px; margin: 0 auto; padding: 22px 14px 64px; }
+
+    /* ── WELCOME BANNER ── */
+    .welcome-banner {
+      background: white; border-radius: 18px; padding: 20px 20px 18px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 22px rgba(0,77,122,0.10);
+      border: 2px solid #ddeeff;
+      text-align: center;
+    }
+    .welcome-banner h2 {
+      font-size: 1.05rem; color: #01579b; font-weight: 800; margin-bottom: 7px;
+    }
+    .welcome-banner p {
+      font-size: 0.80rem; color: #607d8b; line-height: 1.65;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.76rem; font-weight: 800; color: #0277bd;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 8px 0 14px 2px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 2px;
+      background: linear-gradient(90deg, #b3d9f7 0%, transparent 100%);
+      border-radius: 2px;
+    }
+
+    /* ── MENU GRID ── */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .menu-card {
+      background: white; border-radius: 18px; padding: 22px 14px 18px;
+      box-shadow: 0 3px 16px rgba(0,77,122,0.08);
+      border: 2.5px solid transparent;
+      text-decoration: none;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 9px;
+      transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+      position: relative; overflow: hidden;
+    }
+    .menu-card.live {
+      border-color: #90caf9;
+      background: linear-gradient(145deg, #f0f8ff 0%, #e3f2fd 100%);
+    }
+    .menu-card.live:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0,119,182,0.18);
+      border-color: #29b6f6;
+    }
+    .menu-card.soon {
+      opacity: 0.62; cursor: default;
+      background: #f8fafc;
+    }
+
+    .card-icon { font-size: 2.8rem; line-height: 1; display: block; }
+    .card-title { font-size: 0.9rem; font-weight: 800; color: #01579b; line-height: 1.3; }
+    .card-desc  { font-size: 0.70rem; color: #78909c; line-height: 1.55; }
+
+    .badge {
+      position: absolute; top: 10px; right: 10px;
+      font-size: 0.56rem; font-weight: 800; padding: 3px 8px;
+      border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-live {
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      color: white;
+    }
+    .badge-soon {
+      background: #eceff1; color: #90a4ae;
+    }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      text-align: center; font-size: 0.7rem; color: #aabbc8;
+      padding: 8px 0 24px; letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="particles">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+  </div>
+  <span class="logo">🏢</span>
+  <h1>Virgilio 1</h1>
+  <div class="subtitle">Portale Condominiale</div>
+  <div class="address">Servizi e informazioni per i residenti</div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#e8f4fd"/>
+    <path d="M0,50 C220,18 440,66 660,46 C880,26 1100,62 1320,44 L1440,50 L1440,72 L0,72 Z" fill="#e8f4fd" opacity="0.55"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <div class="welcome-banner">
+    <h2>👋 Benvenuto nel portale del condominio</h2>
+    <p>Qui trovi tutti i servizi di <strong>Virgilio 1</strong> raccolti in un unico posto.<br>Seleziona una sezione per continuare.</p>
+  </div>
+
+  <div class="section-label">🗂️ Servizi disponibili</div>
+
+  <div class="menu-grid">
+
+    <!-- ✅ ATTIVO -->
+    <a class="menu-card live" href="piscina.html">
+      <span class="badge badge-live">Attivo</span>
+      <span class="card-icon">🏊</span>
+      <div class="card-title">Piscina</div>
+      <div class="card-desc">Prenotazioni settimanali • Estate</div>
+    </a>
+
+    <!-- 🔜 PROSSIMAMENTE -->
+    <div class="menu-card soon">
+      <span class="badge badge-soon">Presto</span>
+      <span class="card-icon">📋</span>
+      <div class="card-title">Fornitori</div>
+      <div class="card-desc">Idraulico, manutentori, caldaia, amministratore…</div>
+    </div>
+
+    <div class="menu-card soon">
+      <span class="badge badge-soon">Presto</span>
+      <span class="card-icon">🏛️</span>
+      <div class="card-title">Sala Comune</div>
+      <div class="card-desc">Prenota la sala per eventi e riunioni</div>
+    </div>
+
+    <div class="menu-card soon">
+      <span class="badge badge-soon">Presto</span>
+      <span class="card-icon">📌</span>
+      <div class="card-title">Bacheca</div>
+      <div class="card-desc">Avvisi, notizie e post dei condomini</div>
+    </div>
+
+    <div class="menu-card soon">
+      <span class="badge badge-soon">Presto</span>
+      <span class="card-icon">🔧</span>
+      <div class="card-title">Segnalazioni</div>
+      <div class="card-desc">Segnala guasti o problemi nelle aree comuni</div>
+    </div>
+
+    <div class="menu-card soon">
+      <span class="badge badge-soon">Presto</span>
+      <span class="card-icon">📄</span>
+      <div class="card-title">Documenti</div>
+      <div class="card-desc">Regolamento, verbali assemblee e atti condominiali</div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="page-footer">🏢 Condominio Virgilio 1 &nbsp;•&nbsp; Portale Condominiale</div>
+
+</body>
+</html>
