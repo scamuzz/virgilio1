@@ -145,36 +145,22 @@
     .legend-swatch.green { background: #f2faf3; border: 2.5px solid #66bb6a; }
     .legend-swatch.red   { background: #fff5f5; border: 2.5px solid #ef9a9a; }
 
-    /* ── MONTH TABS ── */
-    .month-tabs-wrap {
-      /* margine negativo per uscire dal padding del container
-         e riempire tutta la larghezza, poi padding interno
-         per non tagliare bordi/ombre dei tab */
-      margin: 0 -12px;
-      padding: 4px 12px 10px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      margin-bottom: 6px;
-    }
-    .month-tabs-wrap::-webkit-scrollbar { display: none; }
-
+    /* ── MONTH TABS — griglia 2×2, nessuno scroll ── */
     .month-tabs {
-      display: flex; gap: 8px;
-      /* un piccolo padding-right extra garantisce che l'ultimo tab
-         non venga mai tagliato anche su schermi molto stretti */
-      padding-right: 12px;
-      width: max-content;
-      min-width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
     }
 
     .month-tab {
-      flex-shrink: 0;
       background: white; border: 2px solid #b3e5fc;
-      border-radius: 22px; padding: 9px 16px;
-      font-size: 0.75rem; font-weight: 800; color: #0288d1;
-      cursor: pointer; transition: all 0.22s; white-space: nowrap;
-      display: flex; align-items: center; gap: 6px;
-      font-family: inherit;
+      border-radius: 16px; padding: 11px 10px;
+      font-size: 0.78rem; font-weight: 800; color: #0288d1;
+      cursor: pointer; transition: all 0.22s;
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-family: inherit; text-align: center;
+      white-space: nowrap;
     }
     .month-tab:hover { border-color: #29b6f6; background: #f0faff; }
     .month-tab.active {
@@ -186,7 +172,7 @@
       display: inline-flex; align-items: center; justify-content: center;
       background: rgba(255,255,255,0.28); border-radius: 10px;
       padding: 1px 7px; font-size: 0.6rem; font-weight: 800; line-height: 1.6;
-      min-width: 28px;
+      min-width: 28px; flex-shrink: 0;
     }
     .month-tab:not(.active) .tab-pill { background: #e1f5fe; color: #0288d1; }
 
@@ -229,7 +215,7 @@
       box-shadow: 0 3px 16px rgba(239,154,154,0.13);
     }
 
-    /* ✨ Evidenziazione extra se sei tu tra gli iscritti */
+    /* ✨ Sei tu tra gli iscritti */
     .week-card.week-booked.has-me {
       border-color: #43a047;
       box-shadow: 0 3px 18px rgba(67,160,71,0.28);
@@ -348,10 +334,8 @@
     <span class="legend-item"><span class="legend-swatch red"></span>Libera</span>
   </div>
 
-  <!-- Tab mesi — il wrapper gestisce lo scroll senza tagliare -->
-  <div class="month-tabs-wrap">
-    <div class="month-tabs" id="month-tabs"></div>
-  </div>
+  <!-- Tab mesi — griglia 2×2, sempre tutti visibili -->
+  <div class="month-tabs" id="month-tabs"></div>
 
   <!-- Settimane del mese attivo -->
   <div id="weeks-container"></div>
