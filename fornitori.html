@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>📋 Fornitori — Virgilio 1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #1a3a5c 0%, #0077b6 50%, #00b4d8 100%);
+      color: white;
+      padding: 44px 20px 28px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.10), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.07), transparent);
+    }
+    .header::after {
+      content: '';
+      position: absolute; bottom: 0; left: -60%; right: -60%; height: 50px;
+      background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,255,255,0.15), transparent);
+      animation: reflect 5s ease-in-out infinite;
+    }
+    @keyframes reflect {
+      0%,100% { transform: scaleX(1);    opacity: 0.5; }
+      50%      { transform: scaleX(1.06); opacity: 1;   }
+    }
+
+    .back-link {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,0.18); border-radius: 20px;
+      padding: 7px 15px; font-size: 0.76rem; font-weight: 700;
+      color: white; text-decoration: none; z-index: 2;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.30); }
+
+    .header .logo { font-size: 3.4rem; display: block; margin-bottom: 10px; line-height: 1; position: relative; }
+    .header h1 {
+      font-size: 1.75rem; font-weight: 900; letter-spacing: 0.5px;
+      text-shadow: 0 3px 12px rgba(0,0,0,0.22); position: relative;
+    }
+    .header .subtitle {
+      font-size: 0.82rem; opacity: 0.88; margin-top: 6px;
+      font-weight: 500; letter-spacing: 0.3px; position: relative;
+    }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #1a3a5c 0%, #0077b6 50%, #00b4d8 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 16px 14px 60px; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.76rem; font-weight: 800; color: #0277bd;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 22px 0 12px 2px;
+    }
+    .section-label:first-of-type { margin-top: 8px; }
+    .section-label::after {
+      content: ''; flex: 1; height: 2px;
+      background: linear-gradient(90deg, #b3d9f7 0%, transparent 100%);
+      border-radius: 2px;
+    }
+
+    /* ── SUPPLIER CARD ── */
+    .supplier-card {
+      background: white; border-radius: 16px;
+      padding: 16px 18px; margin-bottom: 10px;
+      box-shadow: 0 2px 14px rgba(0,77,122,0.08);
+      border: 2px solid #e3f0fb;
+      display: flex; gap: 14px; align-items: flex-start;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .supplier-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(0,119,182,0.14);
+    }
+
+    .supplier-icon {
+      font-size: 2.4rem; line-height: 1; flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .supplier-info { flex: 1; min-width: 0; }
+
+    .supplier-role {
+      font-size: 0.63rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.8px; margin-bottom: 3px;
+    }
+    .role-gestione  { color: #7b1fa2; }
+    .role-impianti  { color: #bf360c; }
+    .role-piscina   { color: #0077b6; }
+    .role-pulizie   { color: #2e7d32; }
+
+    .supplier-name {
+      font-size: 0.97rem; font-weight: 800; color: #1a2e3f;
+      margin-bottom: 1px; line-height: 1.3;
+    }
+    .supplier-company {
+      font-size: 0.74rem; color: #78909c; margin-bottom: 10px;
+      font-style: italic;
+    }
+
+    .contact-buttons { display: flex; flex-wrap: wrap; gap: 7px; }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 8px 13px; border-radius: 10px;
+      font-size: 0.73rem; font-weight: 700;
+      text-decoration: none; transition: all 0.2s; white-space: nowrap;
+    }
+    .contact-btn.phone {
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      color: white;
+      box-shadow: 0 2px 8px rgba(0,119,182,0.25);
+    }
+    .contact-btn.phone:hover { opacity: 0.85; transform: translateY(-1px); }
+    .contact-btn.email {
+      background: #f0f4f8; color: #0277bd;
+      border: 1.5px solid #b3d9f7;
+    }
+    .contact-btn.email:hover { background: #e1eefa; }
+
+    .supplier-note {
+      font-size: 0.69rem; color: #90a4ae; margin-top: 9px;
+      line-height: 1.55; font-style: italic;
+      border-top: 1px dashed #e3f0fb; padding-top: 7px;
+    }
+
+    /* ── EDIT HINT ── */
+    .edit-hint {
+      background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 6px;
+      font-size: 0.73rem; color: #7b5800; line-height: 1.6;
+    }
+    .edit-hint strong { font-weight: 800; }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      text-align: center; font-size: 0.7rem; color: #aabbc8;
+      padding: 8px 0 24px; letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <span class="logo">📋</span>
+  <h1>Fornitori</h1>
+  <div class="subtitle">Contatti e riferimenti del condominio</div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#f0f4f8"/>
+    <path d="M0,50 C220,18 440,66 660,46 C880,26 1100,62 1320,44 L1440,50 L1440,72 L0,72 Z" fill="#f0f4f8" opacity="0.55"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <div class="edit-hint">
+    ✏️ <strong>Nota:</strong> I dati qui sotto sono di esempio. Aggiorna nomi, numeri e email con i contatti reali modificando il file <code>fornitori.html</code>.
+  </div>
+
+  <!-- ── GESTIONE ── -->
+  <div class="section-label">🏛️ Gestione</div>
+
+  <div class="supplier-card">
+    <div class="supplier-icon">👔</div>
+    <div class="supplier-info">
+      <div class="supplier-role role-gestione">Amministratore Condominiale</div>
+      <div class="supplier-name">Mario Rossi</div>
+      <div class="supplier-company">Studio Rossi &amp; Associati</div>
+      <div class="contact-buttons">
+        <a class="contact-btn phone" href="tel:+390212345678">📞 02 1234 5678</a>
+        <a class="contact-btn email" href="mailto:rossi@studiorossi.it">✉️ Email</a>
+      </div>
+      <div class="supplier-note">Ricevimento: Lun / Mer 10:00–12:00</div>
+    </div>
+  </div>
+
+  <!-- ── IMPIANTI ── -->
+  <div class="section-label">🔧 Impianti</div>
+
+  <div class="supplier-card">
+    <div class="supplier-icon">🔥</div>
+    <div class="supplier-info">
+      <div class="supplier-role role-impianti">Manutentore Caldaia</div>
+      <div class="supplier-name">Carlo Bianchi</div>
+      <div class="supplier-company">Termoidraulica Bianchi Srl</div>
+      <div class="contact-buttons">
+        <a class="contact-btn phone" href="tel:+393331234567">📞 333 123 4567</a>
+        <a class="contact-btn email" href="mailto:bianchi@termoidraulica.it">✉️ Email</a>
+      </div>
+      <div class="supplier-note">Assistenza h24 per emergenze</div>
+    </div>
+  </div>
+
+  <div class="supplier-card">
+    <div class="supplier-icon">🚿</div>
+    <div class="supplier-info">
+      <div class="supplier-role role-impianti">Idraulico</div>
+      <div class="supplier-name">Giuseppe Verdi</div>
+      <div class="supplier-company">Idraulica Verdi</div>
+      <div class="contact-buttons">
+        <a class="contact-btn phone" href="tel:+393479876543">📞 347 987 6543</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="supplier-card">
+    <div class="supplier-icon">⚡</div>
+    <div class="supplier-info">
+      <div class="supplier-role role-impianti">Elettricista</div>
+      <div class="supplier-name">Luca Neri</div>
+      <div class="supplier-company">Impianti Elettrici Neri</div>
+      <div class="contact-buttons">
+        <a class="contact-btn phone" href="tel:+393285551234">📞 328 555 1234</a>
+        <a class="contact-btn email" href="mailto:neri@impiantineri.it">✉️ Email</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PISCINA & GIARDINO ── -->
+  <div class="section-label">🏊 Piscina &amp; Giardino</div>
+
+  <div class="supplier-card">
+    <div class="supplier-icon">🏊</div>
+    <div class="supplier-info">
+      <div class="supplier-role role-piscina">Manutentore Piscina</div>
+      <div class="supplier-name">AquaService Srl</div>
+      <div class="supplier-company">AquaService Srl</div>
+      <div class="contact-buttons">
+        <a class="contact-btn phone" href="tel:+393401112233">📞 340 111 2233</a>
+        <a class="contact-btn email" href="mailto:info@aquaservice.it">✉️ Email</a>
+      </div>
+      <div class="supplier-note">Manutenzione settimanale • Giu – Set</div>
+    </div>
+  </div>
+
+  <div class="supplier-card">
+    <div class="supplier-icon">🌿</div>
+    <div class="supplier-info">
+      <div class="supplier-role role-piscina">Giardiniere</div>
+      <div class="supplier-name">Roberto Gialli</div>
+      <div class="supplier-company">Verde &amp; Giardini</div>
+      <div class="contact-buttons">
+        <a class="contact-btn phone" href="tel:+393354445566">📞 335 444 5566</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PULIZIE ── -->
+  <div class="section-label">🧹 Pulizie</div>
+
+  <div class="supplier-card">
+    <div class="supplier-icon">🧹</div>
+    <div class="supplier-info">
+      <div class="supplier-role role-pulizie">Impresa di Pulizie</div>
+      <div class="supplier-name">CleanHome Srl</div>
+      <div class="supplier-company">CleanHome Srl</div>
+      <div class="contact-buttons">
+        <a class="contact-btn phone" href="tel:+390287654321">📞 02 8765 4321</a>
+        <a class="contact-btn email" href="mailto:info@cleanhome.it">✉️ Email</a>
+      </div>
+      <div class="supplier-note">Pulizie parti comuni: Mar / Ven mattina</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">🏢 Condominio Virgilio 1 &nbsp;•&nbsp; Fornitori</div>
+
+</body>
+</html>
