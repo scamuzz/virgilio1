@@ -99,6 +99,9 @@
     .name-hint { font-size: 0.71rem; color: #90a4ae; margin-top: 6px; line-height: 1.5; }
 
     /* ── SLOT BUTTONS ── */
+    .slot-hint-text {
+      font-size: 0.68rem; color: #80cbc4; margin-bottom: 8px; font-style: italic;
+    }
     .slot-row {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
     }
@@ -107,13 +110,18 @@
       padding: 10px 6px; font-size: 0.73rem; font-weight: 700;
       cursor: pointer; transition: all 0.2s; font-family: inherit;
       background: white; text-align: center; color: #607d8b;
-      line-height: 1.5;
+      line-height: 1.5; position: relative;
     }
     .slot-btn:hover:not(.occupied) { border-color: #00796b; background: #f0f7f4; }
     .slot-btn.selected {
       background: linear-gradient(135deg, #00796b, #26a69a);
       color: white; border-color: transparent;
       box-shadow: 0 3px 12px rgba(0,121,107,0.28);
+    }
+    .slot-btn.selected::after {
+      content: '✓';
+      position: absolute; top: 5px; right: 7px;
+      font-size: 0.65rem; font-weight: 900; opacity: 0.9;
     }
     .slot-btn.occupied {
       opacity: 0.42; cursor: not-allowed;
@@ -122,6 +130,13 @@
     .slot-time { font-size: 0.60rem; opacity: 0.85; font-weight: 500; }
     .slot-who  { font-size: 0.58rem; margin-top: 3px; color: #ef5350; font-weight: 600; }
     .slot-btn.occupied .slot-who { color: #bdbdbd; }
+
+    /* riepilogo selezione */
+    .selection-summary {
+      margin-top: 10px; font-size: 0.72rem; color: #00796b;
+      font-weight: 700; min-height: 18px; transition: all 0.2s;
+    }
+    .selection-summary.empty { color: #bcaaa4; font-weight: 400; font-style: italic; }
 
     .submit-btn {
       width: 100%; border: none; border-radius: 10px;
@@ -193,11 +208,13 @@
     }
     .delete-btn:hover { background: #ffebee; color: #c62828; }
 
+    .slots-row {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 7px;
+    }
     .booking-slot {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: 0.78rem; font-weight: 700; color: #00796b;
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.75rem; font-weight: 700; color: #00796b;
       background: #e0f2f1; padding: 4px 10px; border-radius: 10px;
-      margin-bottom: 7px;
     }
     .booking-author { font-size: 0.78rem; color: #546e7a; }
     .booking-note {
@@ -210,6 +227,10 @@
     }
     .past-tag {
       font-size: 0.60rem; background: #eceff1; color: #90a4ae;
+      padding: 2px 7px; border-radius: 8px; font-weight: 700;
+    }
+    .fullday-tag {
+      font-size: 0.60rem; background: #fce4ec; color: #880e4f;
       padding: 2px 7px; border-radius: 8px; font-weight: 700;
     }
 
@@ -278,7 +299,11 @@
     </div>
 
     <div class="form-group">
-      <label class="form-label">🕐 Fascia oraria <span id="slot-hint" style="color:#bcaaa4;font-weight:400;font-size:0.68rem"></span></label>
+      <label class="form-label">
+        🕐 Fasce orarie
+        <span id="slot-hint" style="color:#bcaaa4;font-weight:400;font-size:0.68rem"></span>
+      </label>
+      <div class="slot-hint-text">Tocca per selezionare/deselezionare — puoi scegliere più fasce</div>
       <div class="slot-row" id="slot-row">
         <button class="slot-btn" data-slot="mattina">
           🌅 Mattina<br><span class="slot-time">09:00–13:00</span><br><span class="slot-who" id="who-mattina"></span>
@@ -290,6 +315,7 @@
           🌆 Sera<br><span class="slot-time">18:00–23:00</span><br><span class="slot-who" id="who-sera"></span>
         </button>
       </div>
+      <div class="selection-summary empty" id="selection-summary">Nessuna fascia selezionata</div>
     </div>
 
     <div class="form-group">
@@ -334,14 +360,20 @@
 
   let bookingsData = {};
   let activeFilter = 'prossime';
-  let activeSlot   = '';
+  let activeSlots  = new Set();   // ← selezione multipla
+
+  const SLOT_ORDER = { mattina: 0, pomeriggio: 1, sera: 2 };
+  const SLOT_LABELS = {
+    mattina:    '🌅 Mattina 09:00–13:00',
+    pomeriggio: '🌞 Pomeriggio 13:00–18:00',
+    sera:       '🌆 Sera 18:00–23:00'
+  };
 
   const nameInput = document.getElementById('user-name');
   const dateInput = document.getElementById('booking-date');
   const noteInput = document.getElementById('booking-note');
 
-  // Data minima = oggi
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr  = new Date().toISOString().split('T')[0];
   dateInput.min   = todayStr;
   dateInput.value = todayStr;
 
@@ -352,19 +384,38 @@
 
   dateInput.addEventListener('change', updateSlots);
 
-  // Selezione fascia
+  /* ── Toggle selezione fascia (click) ── */
   document.querySelectorAll('.slot-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.classList.contains('occupied')) return;
-      activeSlot = btn.dataset.slot;
-      document.querySelectorAll('.slot-btn').forEach(b => {
-        if (!b.classList.contains('occupied')) b.classList.remove('selected');
-      });
-      btn.classList.add('selected');
+      const s = btn.dataset.slot;
+      if (activeSlots.has(s)) {
+        activeSlots.delete(s);
+        btn.classList.remove('selected');
+      } else {
+        activeSlots.add(s);
+        btn.classList.add('selected');
+      }
+      updateSelectionSummary();
     });
   });
 
-  // Filtri
+  /* ── Riepilogo selezione ── */
+  function updateSelectionSummary() {
+    const el = document.getElementById('selection-summary');
+    if (activeSlots.size === 0) {
+      el.className = 'selection-summary empty';
+      el.textContent = 'Nessuna fascia selezionata';
+    } else {
+      el.className = 'selection-summary';
+      const labels = [...activeSlots]
+        .sort((a, b) => SLOT_ORDER[a] - SLOT_ORDER[b])
+        .map(s => SLOT_LABELS[s].split(' ')[0] + ' ' + SLOT_LABELS[s].split(' ')[1]);
+      el.textContent = `✅ Selezionate: ${labels.join(' + ')}`;
+    }
+  }
+
+  /* ── Filtri ── */
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       activeFilter = btn.dataset.filter;
@@ -374,7 +425,7 @@
     });
   });
 
-  // Firebase
+  /* ── Firebase ── */
   db.ref('.info/connected').on('value', snap => {
     const dot = document.getElementById('sync-dot');
     const lbl = document.getElementById('sync-label');
@@ -393,6 +444,7 @@
     render();
   });
 
+  /* ── Helpers ── */
   function esc(s) {
     return String(s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -400,36 +452,44 @@
   }
   function myName()   { return nameInput.value.trim(); }
   function myNameLc() { return myName().toLowerCase(); }
+  function isPast(dateStr) { return dateStr < todayStr; }
 
+  /* restituisce il record che occupa lo slot (compatibile col vecchio formato) */
   function getBookingForSlot(date, slot) {
-    return Object.values(bookingsData).find(b => b.data === date && b.slot === slot) || null;
+    return Object.values(bookingsData).find(b => {
+      if (b.data !== date) return false;
+      if (b.slots) return b.slots.includes(slot);   // nuovo formato
+      return b.slot === slot;                        // vecchio formato
+    }) || null;
   }
 
+  /* ── Aggiorna stato pulsanti fascia ── */
   function updateSlots() {
     const selDate = dateInput.value;
-    const slots   = ['mattina', 'pomeriggio', 'sera'];
     let freeCount = 0;
-    slots.forEach(s => {
+    ['mattina', 'pomeriggio', 'sera'].forEach(s => {
       const btn     = document.querySelector(`.slot-btn[data-slot="${s}"]`);
       const whoEl   = document.getElementById(`who-${s}`);
       const booking = getBookingForSlot(selDate, s);
       if (booking) {
         btn.classList.add('occupied');
         btn.classList.remove('selected');
+        activeSlots.delete(s);
         whoEl.textContent = `👤 ${booking.autore}`;
-        if (activeSlot === s) activeSlot = '';
       } else {
         btn.classList.remove('occupied');
         whoEl.textContent = '';
         freeCount++;
       }
     });
+    updateSelectionSummary();
     const hint = document.getElementById('slot-hint');
     hint.textContent = freeCount === 3 ? '— tutti liberi 🟢' :
                        freeCount === 0 ? '— giornata completa 🔴' :
                        `— ${freeCount} fasc${freeCount === 1 ? 'ia libera' : 'e libere'}`;
   }
 
+  /* ── Formattazione date ── */
   const WEEKDAYS  = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
   const MONTHS_IT = ['gennaio','febbraio','marzo','aprile','maggio','giugno',
                      'luglio','agosto','settembre','ottobre','novembre','dicembre'];
@@ -440,21 +500,15 @@
     return `${WEEKDAYS[dt.getDay()]} ${d} ${MONTHS_IT[m - 1]} ${y}`;
   }
 
-  function slotLabel(s) {
-    if (s === 'mattina')    return '🌅 Mattina  09:00–13:00';
-    if (s === 'pomeriggio') return '🌞 Pomeriggio  13:00–18:00';
-    return '🌆 Sera  18:00–23:00';
-  }
-
-  function isPast(dateStr) { return dateStr < todayStr; }
-
+  /* ── Render lista prenotazioni ── */
   function render() {
     const container = document.getElementById('bookings-container');
-    const slotOrder = { mattina: 0, pomeriggio: 1, sera: 2 };
-    let entries = Object.entries(bookingsData)
-      .sort(([,a],[,b]) =>
-        a.data.localeCompare(b.data) || slotOrder[a.slot] - slotOrder[b.slot]
-      );
+
+    let entries = Object.entries(bookingsData).sort(([,a],[,b]) => {
+      const aFirst = a.slots ? a.slots[0] : a.slot;
+      const bFirst = b.slots ? b.slots[0] : b.slot;
+      return a.data.localeCompare(b.data) || SLOT_ORDER[aFirst] - SLOT_ORDER[bFirst];
+    });
 
     if (activeFilter === 'prossime') entries = entries.filter(([,b]) => !isPast(b.data));
     if (activeFilter === 'mine')     entries = entries.filter(([,b]) =>
@@ -479,20 +533,31 @@
     }
 
     container.innerHTML = entries.map(([id, b]) => {
-      const isMe = myName() && b.autore.toLowerCase() === myNameLc();
-      const past = isPast(b.data);
+      const isMe    = myName() && b.autore.toLowerCase() === myNameLc();
+      const past    = isPast(b.data);
+      // compatibilità vecchio formato (slot singolo) e nuovo (slots array)
+      const slots   = b.slots
+        ? [...b.slots].sort((a, c) => SLOT_ORDER[a] - SLOT_ORDER[c])
+        : [b.slot];
+      const isFullDay = slots.length === 3;
+
+      const slotsHtml = slots.map(s =>
+        `<span class="booking-slot">${SLOT_LABELS[s]}</span>`
+      ).join('');
+
       return `
         <div class="booking-card${isMe ? ' mine' : ''}${past ? ' past' : ''}">
           <div class="booking-header">
             <div class="booking-date-big">📅 ${formatDateLabel(b.data)}</div>
             <div class="booking-right">
+              ${isFullDay ? '<span class="fullday-tag">Giornata intera</span>' : ''}
               ${past ? '<span class="past-tag">Passata</span>' : ''}
               ${isMe && !past
                 ? `<button class="delete-btn" data-id="${id}" title="Cancella prenotazione">🗑️</button>`
                 : ''}
             </div>
           </div>
-          <div class="booking-slot">${slotLabel(b.slot)}</div>
+          <div class="slots-row">${slotsHtml}</div>
           <div class="booking-author">
             👤 ${esc(b.autore)} ${isMe ? '<span class="me-tag">Tu</span>' : ''}
           </div>
@@ -510,6 +575,7 @@
     );
   }
 
+  /* ── Invio prenotazione ── */
   document.getElementById('submit-btn').addEventListener('click', () => {
     if (!myName()) {
       highlight(nameInput); showToast('⚠️ Inserisci il tuo nome!'); return;
@@ -520,26 +586,33 @@
     if (dateInput.value < todayStr) {
       highlight(dateInput); showToast('⚠️ Scegli una data futura!'); return;
     }
-    if (!activeSlot) {
-      showToast('⚠️ Scegli una fascia oraria!'); return;
-    }
-    if (getBookingForSlot(dateInput.value, activeSlot)) {
-      showToast('❌ Fascia già occupata per questa data!'); return;
+    if (activeSlots.size === 0) {
+      showToast('⚠️ Scegli almeno una fascia oraria!'); return;
     }
 
-    const booking = {
+    // verifica che nessuna delle fasce selezionate sia già occupata
+    const conflicting = [...activeSlots].filter(s =>
+      getBookingForSlot(dateInput.value, s)
+    );
+    if (conflicting.length > 0) {
+      showToast('❌ Una o più fasce sono già occupate!'); return;
+    }
+
+    const slotsArr = [...activeSlots].sort((a, b) => SLOT_ORDER[a] - SLOT_ORDER[b]);
+    const booking  = {
       autore: myName(),
       data:   dateInput.value,
-      slot:   activeSlot,
+      slots:  slotsArr,
       ts:     Date.now()
     };
     if (noteInput.value.trim()) booking.note = noteInput.value.trim();
     salaRef.push(booking);
 
     noteInput.value = '';
-    activeSlot      = '';
+    activeSlots.clear();
     document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-    showToast('✅ Sala prenotata!');
+    updateSelectionSummary();
+    showToast(`✅ Sala prenotata per ${slotsArr.length} fasc${slotsArr.length === 1 ? 'ia' : 'e'}!`);
   });
 
   function highlight(el) {
