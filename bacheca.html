@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>📌 Bacheca — Virgilio 1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fffbf0;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #5d3e00 0%, #e65100 55%, #ff8f00 100%);
+      color: white;
+      padding: 36px 20px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.10), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.07), transparent);
+    }
+
+    .back-link {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,0.18); border-radius: 20px;
+      padding: 7px 15px; font-size: 0.76rem; font-weight: 700;
+      color: white; text-decoration: none; z-index: 2;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.30); }
+
+    .header .icons { font-size: 3rem; display: block; margin-bottom: 10px; line-height: 1; position: relative; }
+    .header h1 {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2); position: relative;
+    }
+    .header .subtitle {
+      font-size: 0.82rem; opacity: 0.9; margin-top: 6px;
+      font-weight: 500; letter-spacing: 0.3px; position: relative;
+    }
+
+    .sync-status {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-size: 0.7rem; margin-top: 12px; opacity: 0.92; position: relative;
+    }
+    .sync-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #fff; animation: blink 1.5s infinite; flex-shrink: 0;
+    }
+    .sync-dot.connected { background: #a5d6a7; animation: none; }
+    .sync-dot.error     { background: #ef9a9a; animation: none; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #5d3e00 0%, #e65100 55%, #ff8f00 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 16px 12px 60px; }
+
+    /* ── FORM ── */
+    .post-form {
+      background: white; border-radius: 18px; padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 22px rgba(230,81,0,0.10);
+      border: 2px solid #ffe0b2;
+    }
+    .post-form h3 {
+      font-size: 0.76rem; color: #e65100;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      font-weight: 800; margin-bottom: 12px;
+    }
+
+    .form-group { margin-bottom: 10px; }
+    .form-label { font-size: 0.72rem; font-weight: 700; color: #6d4c41; margin-bottom: 4px; display: block; }
+
+    .form-input, .form-textarea {
+      width: 100%; border: 2px solid #ffe0b2; border-radius: 10px;
+      padding: 10px 13px; font-size: 0.88rem; outline: none;
+      color: #333; transition: border-color 0.2s; font-family: inherit;
+      background: #fffdf8;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: #e65100; background: #fff; }
+    .form-textarea { min-height: 90px; resize: vertical; }
+    .name-hint { font-size: 0.71rem; color: #90a4ae; margin-top: 6px; line-height: 1.5; }
+    .char-counter { font-size: 0.65rem; color: #bcaaa4; text-align: right; margin-top: 3px; }
+
+    .post-btn {
+      width: 100%; border: none; border-radius: 10px;
+      padding: 11px 14px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: linear-gradient(135deg, #e65100, #ff8f00);
+      color: white;
+      box-shadow: 0 3px 12px rgba(230,81,0,0.25);
+      margin-top: 4px;
+    }
+    .post-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.76rem; font-weight: 800; color: #e65100;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 4px 0 14px 2px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 2px;
+      background: linear-gradient(90deg, #ffe0b2 0%, transparent 100%);
+      border-radius: 2px;
+    }
+
+    /* ── POST CARDS ── */
+    .post-card {
+      background: white; border-radius: 16px;
+      padding: 14px 16px; margin-bottom: 10px;
+      box-shadow: 0 2px 12px rgba(230,81,0,0.07);
+      border: 2px solid #fff3e0;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .post-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(230,81,0,0.12); }
+    .post-card.mine {
+      border-color: #ffcc80;
+      background: linear-gradient(135deg, #fffdf5 0%, #fff8ee 100%);
+    }
+
+    .post-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 8px; margin-bottom: 6px;
+    }
+    .post-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+    .post-author { font-size: 0.82rem; font-weight: 800; color: #e65100; }
+    .me-tag {
+      font-size: 0.60rem; background: #ffe0b2; color: #bf360c;
+      padding: 1px 6px; border-radius: 8px; font-weight: 700;
+    }
+    .post-time { font-size: 0.65rem; color: #bcaaa4; font-weight: 500; }
+    .post-delete {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.80rem; color: #ef9a9a; padding: 3px 7px;
+      border-radius: 8px; transition: background 0.2s, color 0.2s; flex-shrink: 0;
+    }
+    .post-delete:hover { background: #ffebee; color: #c62828; }
+
+    .post-title {
+      font-size: 0.92rem; font-weight: 700; color: #333;
+      margin-bottom: 4px; line-height: 1.35;
+    }
+    .post-text {
+      font-size: 0.80rem; color: #555; line-height: 1.65;
+      white-space: pre-wrap; word-break: break-word;
+    }
+
+    .empty-state {
+      text-align: center; padding: 36px 16px;
+      color: #bcaaa4; font-size: 0.82rem; line-height: 1.8;
+    }
+    .empty-state .emoji { font-size: 2.6rem; display: block; margin-bottom: 10px; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #bf360c; color: white;
+      padding: 10px 22px; border-radius: 24px;
+      font-size: 0.83rem; font-weight: 600;
+      transition: transform 0.3s ease; z-index: 999;
+      white-space: nowrap; max-width: calc(100vw - 32px);
+      box-shadow: 0 6px 24px rgba(191,54,12,0.4);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .page-footer {
+      text-align: center; font-size: 0.7rem; color: #bcaaa4;
+      padding: 6px 0 20px; letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <span class="icons">📌</span>
+  <h1>Bacheca Virgilio 1</h1>
+  <div class="subtitle">Avvisi, notizie e messaggi dei condomini</div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Connessione in corso…</span>
+  </div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#fffbf0"/>
+    <path d="M0,50 C220,18 440,66 660,46 C880,26 1100,62 1320,44 L1440,50 L1440,72 L0,72 Z" fill="#fffbf0" opacity="0.55"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <!-- Form nuovo avviso -->
+  <div class="post-form">
+    <h3>✏️ Pubblica un avviso</h3>
+    <div class="form-group">
+      <label class="form-label">👤 Il tuo nome</label>
+      <input class="form-input" type="text" id="user-name"
+             placeholder="Es. Marco, Giulia…" maxlength="30"
+             autocomplete="off" spellcheck="false"/>
+      <div class="name-hint">Il tuo nome viene ricordato automaticamente.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">📝 Titolo <span style="color:#bcaaa4;font-weight:400">(opzionale)</span></label>
+      <input class="form-input" type="text" id="post-title"
+             placeholder="Es. Pulizia scale, Riunione…" maxlength="60" autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">💬 Messaggio</label>
+      <textarea class="form-textarea" id="post-text"
+                placeholder="Scrivi il tuo avviso qui…" maxlength="500"></textarea>
+      <div class="char-counter" id="char-counter">0 / 500</div>
+    </div>
+    <button class="post-btn" id="post-btn">📌 Pubblica avviso</button>
+  </div>
+
+  <div class="section-label">📋 Avvisi recenti</div>
+  <div id="posts-container"></div>
+
+</div>
+
+<div class="page-footer">📌 Bacheca Condominiale • Virgilio 1</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  firebase.initializeApp({
+    apiKey:            "AIzaSyAfOMeAkXUIandLUhCR8nfyELOPVRyD3WU",
+    authDomain:        "lista-spesa-b9eb1.firebaseapp.com",
+    databaseURL:       "https://lista-spesa-b9eb1-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "lista-spesa-b9eb1",
+    storageBucket:     "lista-spesa-b9eb1.firebasestorage.app",
+    messagingSenderId: "468690890938",
+    appId:             "1:468690890938:web:048be7f27779d8862d9283"
+  });
+  const db       = firebase.database();
+  const bacheRef = db.ref('bacheca');
+
+  let postsData = {};
+
+  const nameInput  = document.getElementById('user-name');
+  const titleInput = document.getElementById('post-title');
+  const textArea   = document.getElementById('post-text');
+  const charCnt    = document.getElementById('char-counter');
+
+  nameInput.value = localStorage.getItem('condoName') || '';
+  nameInput.addEventListener('input', () =>
+    localStorage.setItem('condoName', nameInput.value.trim())
+  );
+
+  textArea.addEventListener('input', () => {
+    charCnt.textContent = `${textArea.value.length} / 500`;
+  });
+
+  db.ref('.info/connected').on('value', snap => {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    if (snap.val()) {
+      dot.className   = 'sync-dot connected';
+      lbl.textContent = '🟢 Sincronizzato in tempo reale';
+    } else {
+      dot.className   = 'sync-dot error';
+      lbl.textContent = '🔴 Offline — riconnessione…';
+    }
+  });
+
+  bacheRef.on('value', snap => {
+    postsData = snap.val() || {};
+    render();
+  });
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function myName()   { return nameInput.value.trim(); }
+  function myNameLc() { return myName().toLowerCase(); }
+
+  function formatDate(ts) {
+    const d    = new Date(ts);
+    const diff = Date.now() - ts;
+    if (diff < 60000)     return 'Ora';
+    if (diff < 3600000)   return `${Math.floor(diff/60000)} min fa`;
+    if (diff < 86400000)  return `${Math.floor(diff/3600000)} ore fa`;
+    if (diff < 172800000) return 'Ieri';
+    return d.toLocaleDateString('it-IT', { day:'2-digit', month:'short', year:'numeric' });
+  }
+
+  function render() {
+    const container = document.getElementById('posts-container');
+    const entries   = Object.entries(postsData).sort(([,a],[,b]) => b.ts - a.ts);
+
+    if (entries.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="emoji">📭</span>
+          Nessun avviso ancora.<br>Sii il primo a pubblicare!
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = entries.map(([id, p]) => {
+      const isMe = myName() && p.autore.toLowerCase() === myNameLc();
+      return `
+        <div class="post-card${isMe ? ' mine' : ''}">
+          <div class="post-header">
+            <div class="post-meta">
+              <span class="post-author">${esc(p.autore)}</span>
+              ${isMe ? '<span class="me-tag">Tu</span>' : ''}
+              <span class="post-time">• ${formatDate(p.ts)}</span>
+            </div>
+            ${isMe ? `<button class="post-delete" data-id="${id}" title="Elimina">🗑️</button>` : ''}
+          </div>
+          ${p.titolo ? `<div class="post-title">${esc(p.titolo)}</div>` : ''}
+          <div class="post-text">${esc(p.testo)}</div>
+        </div>`;
+    }).join('');
+
+    container.querySelectorAll('.post-delete').forEach(btn =>
+      btn.addEventListener('click', () => {
+        if (confirm('Eliminare questo avviso?')) {
+          bacheRef.child(btn.dataset.id).remove();
+          showToast('🗑️ Avviso eliminato');
+        }
+      })
+    );
+  }
+
+  document.getElementById('post-btn').addEventListener('click', () => {
+    if (!myName()) {
+      highlight(nameInput);
+      showToast('⚠️ Inserisci prima il tuo nome!');
+      return;
+    }
+    const testo = textArea.value.trim();
+    if (!testo) {
+      highlight(textArea);
+      showToast('⚠️ Scrivi un messaggio!');
+      return;
+    }
+    const post = { autore: myName(), testo, ts: Date.now() };
+    if (titleInput.value.trim()) post.titolo = titleInput.value.trim();
+    bacheRef.push(post);
+    titleInput.value = '';
+    textArea.value   = '';
+    charCnt.textContent = '0 / 500';
+    showToast('📌 Avviso pubblicato!');
+  });
+
+  function highlight(el) {
+    el.focus();
+    el.style.borderColor = '#ef5350';
+    setTimeout(() => el.style.borderColor = '#ffe0b2', 1800);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
