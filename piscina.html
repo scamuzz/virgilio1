@@ -145,7 +145,7 @@
     .legend-swatch.green { background: #f2faf3; border: 2.5px solid #66bb6a; }
     .legend-swatch.red   { background: #fff5f5; border: 2.5px solid #ef9a9a; }
 
-    /* ── MONTH TABS — griglia 2×2, nessuno scroll ── */
+    /* ── MONTH TABS — griglia 2×2 ── */
     .month-tabs {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -154,7 +154,7 @@
     }
 
     .month-tab {
-      background: white; border: 2px solid #b3e5fc;
+      background: white; border: 2.5px solid #b3e5fc;
       border-radius: 16px; padding: 11px 10px;
       font-size: 0.78rem; font-weight: 800; color: #0288d1;
       cursor: pointer; transition: all 0.22s;
@@ -162,7 +162,21 @@
       gap: 6px; font-family: inherit; text-align: center;
       white-space: nowrap;
     }
-    .month-tab:hover { border-color: #29b6f6; background: #f0faff; }
+    .month-tab:hover:not(.active) { background: #f0faff; }
+
+    /* 🟢 Mese completamente prenotato */
+    .month-tab.tab-full:not(.active) {
+      border-color: #66bb6a;
+      background: linear-gradient(145deg, #f2faf3 0%, #e8f5e9 100%);
+      color: #2e7d32;
+    }
+    /* 🔴 Mese con settimane libere */
+    .month-tab.tab-partial:not(.active) {
+      border-color: #ef9a9a;
+      background: linear-gradient(145deg, #fffbfb 0%, #fff5f5 100%);
+      color: #c62828;
+    }
+
     .month-tab.active {
       background: linear-gradient(135deg, #0077b6, #00b4d8);
       color: white; border-color: transparent;
@@ -174,7 +188,9 @@
       padding: 1px 7px; font-size: 0.6rem; font-weight: 800; line-height: 1.6;
       min-width: 28px; flex-shrink: 0;
     }
-    .month-tab:not(.active) .tab-pill { background: #e1f5fe; color: #0288d1; }
+    .month-tab.tab-full:not(.active)    .tab-pill { background: #c8e6c9; color: #1b5e20; }
+    .month-tab.tab-partial:not(.active) .tab-pill { background: #ffcdd2; color: #b71c1c; }
+    .month-tab.active .tab-pill { background: rgba(255,255,255,0.28); color: white; }
 
     /* ── MONTH HEADER ── */
     .month-label {
@@ -201,21 +217,16 @@
       box-shadow: 0 6px 20px rgba(0,119,182,0.13);
     }
 
-    /* 🟢 Almeno una prenotazione */
     .week-card.week-booked {
       border: 2.5px solid #66bb6a;
       background: linear-gradient(135deg, #f2faf3 0%, #e8f5e9 100%);
       box-shadow: 0 3px 16px rgba(102,187,106,0.18);
     }
-
-    /* 🔴 Nessuna prenotazione */
     .week-card.week-empty {
       border: 2.5px solid #ef9a9a;
       background: linear-gradient(135deg, #fffbfb 0%, #fff5f5 100%);
       box-shadow: 0 3px 16px rgba(239,154,154,0.13);
     }
-
-    /* ✨ Sei tu tra gli iscritti */
     .week-card.week-booked.has-me {
       border-color: #43a047;
       box-shadow: 0 3px 18px rgba(67,160,71,0.28);
@@ -334,7 +345,7 @@
     <span class="legend-item"><span class="legend-swatch red"></span>Libera</span>
   </div>
 
-  <!-- Tab mesi — griglia 2×2, sempre tutti visibili -->
+  <!-- Tab mesi -->
   <div class="month-tabs" id="month-tabs"></div>
 
   <!-- Settimane del mese attivo -->
@@ -362,23 +373,23 @@
   const piscinaRef = db.ref('piscina');
 
   const WEEKS = [
-    { id:'w01', label:'Lun 8 - Dom 14 Giugno',      month:'Giugno'    },
-    { id:'w02', label:'Lun 15 - Dom 21 Giugno',     month:'Giugno'    },
-    { id:'w03', label:'Lun 22 - Dom 28 Giugno',     month:'Giugno'    },
-    { id:'w04', label:'Lun 29 Giugno - Dom 5 Luglio',     month:'Giugno'    },
-    { id:'w05', label:'Lun 6 - Dom 12 Luglio',      month:'Luglio'    },
-    { id:'w06', label:'Lun 13 - Dom 19 Luglio',     month:'Luglio'    },
-    { id:'w07', label:'Lun 20 - Dom 26 Luglio',     month:'Luglio'    },
-    { id:'w08', label:'Lun 27 Luglio - Dom 2 Agosto',     month:'Luglio'    },
-    { id:'w09', label:'Lun 3 - Dom 9 Agosto',      month:'Agosto'    },
-    { id:'w10', label:'Lun 10 - Dom 16 Agosto',     month:'Agosto'    },
-    { id:'w11', label:'Lun 17 - Dom 23 Agosto',     month:'Agosto'    },
-    { id:'w12', label:'Lun 24 - Dom 30 Agosto',     month:'Agosto'    },
-    { id:'w13', label:'Lun 31 Agosto - Dom 6 Settembre',     month:'Agosto'    },
-    { id:'w14', label:'Lun 7 - Dom 13 Settembre',   month:'Settembre' },
-    { id:'w15', label:'Lun 14 - Dom 20 Settembre',  month:'Settembre' },
-    { id:'w16', label:'Lun 21 - Dom 27 Settembre',  month:'Settembre' },
-    { id:'w17', label:'Lun 28 Settembre - Dom 4 Ottobre',  month:'Settembre' },
+    { id:'w01', label:'Lun 8 - Dom 14 Giugno',              month:'Giugno'    },
+    { id:'w02', label:'Lun 15 - Dom 21 Giugno',             month:'Giugno'    },
+    { id:'w03', label:'Lun 22 - Dom 28 Giugno',             month:'Giugno'    },
+    { id:'w04', label:'Lun 29 Giugno - Dom 5 Luglio',       month:'Giugno'    },
+    { id:'w05', label:'Lun 6 - Dom 12 Luglio',              month:'Luglio'    },
+    { id:'w06', label:'Lun 13 - Dom 19 Luglio',             month:'Luglio'    },
+    { id:'w07', label:'Lun 20 - Dom 26 Luglio',             month:'Luglio'    },
+    { id:'w08', label:'Lun 27 Luglio - Dom 2 Agosto',       month:'Luglio'    },
+    { id:'w09', label:'Lun 3 - Dom 9 Agosto',               month:'Agosto'    },
+    { id:'w10', label:'Lun 10 - Dom 16 Agosto',             month:'Agosto'    },
+    { id:'w11', label:'Lun 17 - Dom 23 Agosto',             month:'Agosto'    },
+    { id:'w12', label:'Lun 24 - Dom 30 Agosto',             month:'Agosto'    },
+    { id:'w13', label:'Lun 31 Agosto - Dom 6 Settembre',    month:'Agosto'    },
+    { id:'w14', label:'Lun 7 - Dom 13 Settembre',           month:'Settembre' },
+    { id:'w15', label:'Lun 14 - Dom 20 Settembre',          month:'Settembre' },
+    { id:'w16', label:'Lun 21 - Dom 27 Settembre',          month:'Settembre' },
+    { id:'w17', label:'Lun 28 Settembre - Dom 4 Ottobre',   month:'Settembre' },
   ];
 
   const MONTHS      = ['Giugno', 'Luglio', 'Agosto', 'Settembre'];
@@ -438,8 +449,10 @@
     MONTHS.forEach(month => {
       const booked = bookedInMonth(month);
       const total  = totalWeeksInMonth(month);
+      // 🟢 tutte le settimane prenotate → tab-full | 🔴 almeno una libera → tab-partial
+      const statusClass = booked === total ? 'tab-full' : 'tab-partial';
       const btn = document.createElement('button');
-      btn.className = 'month-tab' + (month === activeMonth ? ' active' : '');
+      btn.className = `month-tab ${statusClass}${month === activeMonth ? ' active' : ''}`;
       btn.innerHTML = `${MONTH_ICONS[month]} ${month}<span class="tab-pill">${booked}/${total}</span>`;
       btn.addEventListener('click', () => { activeMonth = month; render(); });
       bar.appendChild(btn);
@@ -454,13 +467,11 @@
     container.innerHTML = '';
     const totalJoined = WEEKS.filter(w => isJoined(w.id)).length;
 
-    /* intestazione mese */
     const hdr = document.createElement('div');
     hdr.className   = 'month-label';
     hdr.textContent = `${MONTH_ICONS[activeMonth] || ''} ${activeMonth}`;
     container.appendChild(hdr);
 
-    /* settimane del mese attivo */
     WEEKS
       .filter(w => w.month === activeMonth)
       .forEach(week => {
@@ -501,7 +512,6 @@
         container.appendChild(card);
       });
 
-    /* badge riepilogo */
     const badge = document.getElementById('my-summary');
     badge.className = 'summary-badge' + (totalJoined === 0 ? ' zero' : '');
     badge.textContent = totalJoined === 0
