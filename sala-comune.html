@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>🏛️ Sala Comune — Virgilio 1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f7f4;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #004d40 0%, #00796b 55%, #26a69a 100%);
+      color: white;
+      padding: 36px 20px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.10), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.07), transparent);
+    }
+
+    .back-link {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,0.18); border-radius: 20px;
+      padding: 7px 15px; font-size: 0.76rem; font-weight: 700;
+      color: white; text-decoration: none; z-index: 2;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.30); }
+
+    .header .icons { font-size: 3rem; display: block; margin-bottom: 10px; line-height: 1; position: relative; }
+    .header h1 {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2); position: relative;
+    }
+    .header .subtitle {
+      font-size: 0.82rem; opacity: 0.9; margin-top: 6px;
+      font-weight: 500; letter-spacing: 0.3px; position: relative;
+    }
+
+    .sync-status {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-size: 0.7rem; margin-top: 12px; opacity: 0.92; position: relative;
+    }
+    .sync-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #fff; animation: blink 1.5s infinite; flex-shrink: 0;
+    }
+    .sync-dot.connected { background: #a5d6a7; animation: none; }
+    .sync-dot.error     { background: #ef9a9a; animation: none; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #004d40 0%, #00796b 55%, #26a69a 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 16px 12px 60px; }
+
+    /* ── FORM ── */
+    .booking-form {
+      background: white; border-radius: 18px; padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 22px rgba(0,121,107,0.10);
+      border: 2px solid #b2dfdb;
+    }
+    .booking-form h3 {
+      font-size: 0.76rem; color: #00796b;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      font-weight: 800; margin-bottom: 12px;
+    }
+
+    .form-group { margin-bottom: 10px; }
+    .form-label { font-size: 0.72rem; font-weight: 700; color: #37474f; margin-bottom: 4px; display: block; }
+
+    .form-input, .form-textarea {
+      width: 100%; border: 2px solid #b2dfdb; border-radius: 10px;
+      padding: 10px 13px; font-size: 0.88rem; outline: none;
+      color: #333; transition: border-color 0.2s; font-family: inherit;
+      background: #f9fdfc;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: #00796b; background: #fff; }
+    .form-textarea { min-height: 70px; resize: vertical; }
+    .name-hint { font-size: 0.71rem; color: #90a4ae; margin-top: 6px; line-height: 1.5; }
+
+    /* ── SLOT BUTTONS ── */
+    .slot-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+    }
+    .slot-btn {
+      border: 2px solid #b2dfdb; border-radius: 10px;
+      padding: 10px 6px; font-size: 0.73rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: white; text-align: center; color: #607d8b;
+      line-height: 1.5;
+    }
+    .slot-btn:hover:not(.occupied) { border-color: #00796b; background: #f0f7f4; }
+    .slot-btn.selected {
+      background: linear-gradient(135deg, #00796b, #26a69a);
+      color: white; border-color: transparent;
+      box-shadow: 0 3px 12px rgba(0,121,107,0.28);
+    }
+    .slot-btn.occupied {
+      opacity: 0.42; cursor: not-allowed;
+      background: #f5f5f5; border-color: #e0e0e0; color: #bdbdbd;
+    }
+    .slot-time { font-size: 0.60rem; opacity: 0.85; font-weight: 500; }
+    .slot-who  { font-size: 0.58rem; margin-top: 3px; color: #ef5350; font-weight: 600; }
+    .slot-btn.occupied .slot-who { color: #bdbdbd; }
+
+    .submit-btn {
+      width: 100%; border: none; border-radius: 10px;
+      padding: 11px 14px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: linear-gradient(135deg, #00796b, #26a69a);
+      color: white;
+      box-shadow: 0 3px 12px rgba(0,121,107,0.25);
+      margin-top: 4px;
+    }
+    .submit-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ── FILTRI ── */
+    .filter-row {
+      display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .filter-btn {
+      border: 2px solid #b2dfdb; border-radius: 20px;
+      padding: 6px 14px; font-size: 0.72rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: white; color: #888;
+    }
+    .filter-btn.active {
+      background: linear-gradient(135deg, #00796b, #26a69a);
+      color: white; border-color: transparent;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.76rem; font-weight: 800; color: #00796b;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 4px 0 10px 2px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 2px;
+      background: linear-gradient(90deg, #b2dfdb 0%, transparent 100%);
+      border-radius: 2px;
+    }
+
+    /* ── BOOKING CARD ── */
+    .booking-card {
+      background: white; border-radius: 16px;
+      padding: 14px 16px; margin-bottom: 10px;
+      box-shadow: 0 2px 12px rgba(0,121,107,0.07);
+      border: 2px solid #e0f2f1;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .booking-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,121,107,0.13); }
+    .booking-card.mine {
+      border-color: #80cbc4;
+      background: linear-gradient(135deg, #f5fdfb 0%, #e0f2f1 100%);
+    }
+    .booking-card.past { opacity: 0.60; }
+
+    .booking-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 8px; margin-bottom: 8px;
+    }
+    .booking-date-big {
+      font-size: 0.98rem; font-weight: 800; color: #00796b; line-height: 1.25;
+    }
+    .booking-right { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+
+    .delete-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.80rem; color: #ef9a9a; padding: 3px 7px;
+      border-radius: 8px; transition: background 0.2s, color 0.2s;
+    }
+    .delete-btn:hover { background: #ffebee; color: #c62828; }
+
+    .booking-slot {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.78rem; font-weight: 700; color: #00796b;
+      background: #e0f2f1; padding: 4px 10px; border-radius: 10px;
+      margin-bottom: 7px;
+    }
+    .booking-author { font-size: 0.78rem; color: #546e7a; }
+    .booking-note {
+      font-size: 0.76rem; color: #78909c; font-style: italic;
+      line-height: 1.55; word-break: break-word; margin-top: 5px;
+    }
+    .me-tag {
+      font-size: 0.60rem; background: #b2dfdb; color: #004d40;
+      padding: 1px 6px; border-radius: 8px; font-weight: 700;
+    }
+    .past-tag {
+      font-size: 0.60rem; background: #eceff1; color: #90a4ae;
+      padding: 2px 7px; border-radius: 8px; font-weight: 700;
+    }
+
+    .empty-state {
+      text-align: center; padding: 36px 16px;
+      color: #bcaaa4; font-size: 0.82rem; line-height: 1.8;
+    }
+    .empty-state .emoji { font-size: 2.6rem; display: block; margin-bottom: 10px; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #004d40; color: white;
+      padding: 10px 22px; border-radius: 24px;
+      font-size: 0.83rem; font-weight: 600;
+      transition: transform 0.3s ease; z-index: 999;
+      white-space: nowrap; max-width: calc(100vw - 32px);
+      box-shadow: 0 6px 24px rgba(0,77,64,0.4);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .page-footer {
+      text-align: center; font-size: 0.7rem; color: #bcaaa4;
+      padding: 6px 0 20px; letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <span class="icons">🏛️</span>
+  <h1>Sala Comune</h1>
+  <div class="subtitle">Prenota la sala per eventi e riunioni</div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Connessione in corso…</span>
+  </div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#f0f7f4"/>
+    <path d="M0,50 C220,18 440,66 660,46 C880,26 1100,62 1320,44 L1440,50 L1440,72 L0,72 Z" fill="#f0f7f4" opacity="0.55"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <!-- Form prenotazione -->
+  <div class="booking-form">
+    <h3>📅 Nuova prenotazione</h3>
+
+    <div class="form-group">
+      <label class="form-label">👤 Il tuo nome</label>
+      <input class="form-input" type="text" id="user-name"
+             placeholder="Es. Marco, Giulia…" maxlength="30"
+             autocomplete="off" spellcheck="false"/>
+      <div class="name-hint">Il tuo nome viene ricordato automaticamente.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📅 Data</label>
+      <input class="form-input" type="date" id="booking-date"/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">🕐 Fascia oraria <span id="slot-hint" style="color:#bcaaa4;font-weight:400;font-size:0.68rem"></span></label>
+      <div class="slot-row" id="slot-row">
+        <button class="slot-btn" data-slot="mattina">
+          🌅 Mattina<br><span class="slot-time">09:00–13:00</span><br><span class="slot-who" id="who-mattina"></span>
+        </button>
+        <button class="slot-btn" data-slot="pomeriggio">
+          🌞 Pomeriggio<br><span class="slot-time">13:00–18:00</span><br><span class="slot-who" id="who-pomeriggio"></span>
+        </button>
+        <button class="slot-btn" data-slot="sera">
+          🌆 Sera<br><span class="slot-time">18:00–23:00</span><br><span class="slot-who" id="who-sera"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📝 Descrizione <span style="color:#bcaaa4;font-weight:400">(opzionale)</span></label>
+      <textarea class="form-textarea" id="booking-note"
+                placeholder="Es. Festa di compleanno, Riunione…" maxlength="200"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submit-btn">🏛️ Prenota sala</button>
+  </div>
+
+  <!-- Filtri -->
+  <div class="filter-row">
+    <button class="filter-btn active" data-filter="prossime">📅 Prossime</button>
+    <button class="filter-btn" data-filter="tutte">Tutte</button>
+    <button class="filter-btn" data-filter="mine">👤 Mie</button>
+  </div>
+
+  <div class="section-label" id="list-label">📋 Prenotazioni</div>
+  <div id="bookings-container"></div>
+
+</div>
+
+<div class="page-footer">🏛️ Sala Comune • Virgilio 1</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  firebase.initializeApp({
+    apiKey:            "AIzaSyAfOMeAkXUIandLUhCR8nfyELOPVRyD3WU",
+    authDomain:        "lista-spesa-b9eb1.firebaseapp.com",
+    databaseURL:       "https://lista-spesa-b9eb1-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "lista-spesa-b9eb1",
+    storageBucket:     "lista-spesa-b9eb1.firebasestorage.app",
+    messagingSenderId: "468690890938",
+    appId:             "1:468690890938:web:048be7f27779d8862d9283"
+  });
+  const db      = firebase.database();
+  const salaRef = db.ref('sala-comune');
+
+  let bookingsData = {};
+  let activeFilter = 'prossime';
+  let activeSlot   = '';
+
+  const nameInput = document.getElementById('user-name');
+  const dateInput = document.getElementById('booking-date');
+  const noteInput = document.getElementById('booking-note');
+
+  // Data minima = oggi
+  const todayStr = new Date().toISOString().split('T')[0];
+  dateInput.min   = todayStr;
+  dateInput.value = todayStr;
+
+  nameInput.value = localStorage.getItem('condoName') || '';
+  nameInput.addEventListener('input', () =>
+    localStorage.setItem('condoName', nameInput.value.trim())
+  );
+
+  dateInput.addEventListener('change', updateSlots);
+
+  // Selezione fascia
+  document.querySelectorAll('.slot-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('occupied')) return;
+      activeSlot = btn.dataset.slot;
+      document.querySelectorAll('.slot-btn').forEach(b => {
+        if (!b.classList.contains('occupied')) b.classList.remove('selected');
+      });
+      btn.classList.add('selected');
+    });
+  });
+
+  // Filtri
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+  });
+
+  // Firebase
+  db.ref('.info/connected').on('value', snap => {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    if (snap.val()) {
+      dot.className   = 'sync-dot connected';
+      lbl.textContent = '🟢 Sincronizzato in tempo reale';
+    } else {
+      dot.className   = 'sync-dot error';
+      lbl.textContent = '🔴 Offline — riconnessione…';
+    }
+  });
+
+  salaRef.on('value', snap => {
+    bookingsData = snap.val() || {};
+    updateSlots();
+    render();
+  });
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function myName()   { return nameInput.value.trim(); }
+  function myNameLc() { return myName().toLowerCase(); }
+
+  function getBookingForSlot(date, slot) {
+    return Object.values(bookingsData).find(b => b.data === date && b.slot === slot) || null;
+  }
+
+  function updateSlots() {
+    const selDate = dateInput.value;
+    const slots   = ['mattina', 'pomeriggio', 'sera'];
+    let freeCount = 0;
+    slots.forEach(s => {
+      const btn     = document.querySelector(`.slot-btn[data-slot="${s}"]`);
+      const whoEl   = document.getElementById(`who-${s}`);
+      const booking = getBookingForSlot(selDate, s);
+      if (booking) {
+        btn.classList.add('occupied');
+        btn.classList.remove('selected');
+        whoEl.textContent = `👤 ${booking.autore}`;
+        if (activeSlot === s) activeSlot = '';
+      } else {
+        btn.classList.remove('occupied');
+        whoEl.textContent = '';
+        freeCount++;
+      }
+    });
+    const hint = document.getElementById('slot-hint');
+    hint.textContent = freeCount === 3 ? '— tutti liberi 🟢' :
+                       freeCount === 0 ? '— giornata completa 🔴' :
+                       `— ${freeCount} fasc${freeCount === 1 ? 'ia libera' : 'e libere'}`;
+  }
+
+  const WEEKDAYS  = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+  const MONTHS_IT = ['gennaio','febbraio','marzo','aprile','maggio','giugno',
+                     'luglio','agosto','settembre','ottobre','novembre','dicembre'];
+
+  function formatDateLabel(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    return `${WEEKDAYS[dt.getDay()]} ${d} ${MONTHS_IT[m - 1]} ${y}`;
+  }
+
+  function slotLabel(s) {
+    if (s === 'mattina')    return '🌅 Mattina  09:00–13:00';
+    if (s === 'pomeriggio') return '🌞 Pomeriggio  13:00–18:00';
+    return '🌆 Sera  18:00–23:00';
+  }
+
+  function isPast(dateStr) { return dateStr < todayStr; }
+
+  function render() {
+    const container = document.getElementById('bookings-container');
+    const slotOrder = { mattina: 0, pomeriggio: 1, sera: 2 };
+    let entries = Object.entries(bookingsData)
+      .sort(([,a],[,b]) =>
+        a.data.localeCompare(b.data) || slotOrder[a.slot] - slotOrder[b.slot]
+      );
+
+    if (activeFilter === 'prossime') entries = entries.filter(([,b]) => !isPast(b.data));
+    if (activeFilter === 'mine')     entries = entries.filter(([,b]) =>
+      myName() && b.autore.toLowerCase() === myNameLc()
+    );
+
+    document.getElementById('list-label').textContent =
+      `📋 Prenotazioni (${entries.length})`;
+
+    if (entries.length === 0) {
+      const msgs = {
+        prossime: 'Nessuna prenotazione futura.<br>La sala è libera! 🎉',
+        mine:     'Non hai ancora prenotazioni.',
+        tutte:    'Nessuna prenotazione registrata.'
+      };
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="emoji">🏛️</span>
+          ${msgs[activeFilter]}
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = entries.map(([id, b]) => {
+      const isMe = myName() && b.autore.toLowerCase() === myNameLc();
+      const past = isPast(b.data);
+      return `
+        <div class="booking-card${isMe ? ' mine' : ''}${past ? ' past' : ''}">
+          <div class="booking-header">
+            <div class="booking-date-big">📅 ${formatDateLabel(b.data)}</div>
+            <div class="booking-right">
+              ${past ? '<span class="past-tag">Passata</span>' : ''}
+              ${isMe && !past
+                ? `<button class="delete-btn" data-id="${id}" title="Cancella prenotazione">🗑️</button>`
+                : ''}
+            </div>
+          </div>
+          <div class="booking-slot">${slotLabel(b.slot)}</div>
+          <div class="booking-author">
+            👤 ${esc(b.autore)} ${isMe ? '<span class="me-tag">Tu</span>' : ''}
+          </div>
+          ${b.note ? `<div class="booking-note">💬 ${esc(b.note)}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    container.querySelectorAll('.delete-btn').forEach(btn =>
+      btn.addEventListener('click', () => {
+        if (confirm('Cancellare questa prenotazione?')) {
+          salaRef.child(btn.dataset.id).remove();
+          showToast('🗑️ Prenotazione cancellata');
+        }
+      })
+    );
+  }
+
+  document.getElementById('submit-btn').addEventListener('click', () => {
+    if (!myName()) {
+      highlight(nameInput); showToast('⚠️ Inserisci il tuo nome!'); return;
+    }
+    if (!dateInput.value) {
+      highlight(dateInput); showToast('⚠️ Seleziona una data!'); return;
+    }
+    if (dateInput.value < todayStr) {
+      highlight(dateInput); showToast('⚠️ Scegli una data futura!'); return;
+    }
+    if (!activeSlot) {
+      showToast('⚠️ Scegli una fascia oraria!'); return;
+    }
+    if (getBookingForSlot(dateInput.value, activeSlot)) {
+      showToast('❌ Fascia già occupata per questa data!'); return;
+    }
+
+    const booking = {
+      autore: myName(),
+      data:   dateInput.value,
+      slot:   activeSlot,
+      ts:     Date.now()
+    };
+    if (noteInput.value.trim()) booking.note = noteInput.value.trim();
+    salaRef.push(booking);
+
+    noteInput.value = '';
+    activeSlot      = '';
+    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+    showToast('✅ Sala prenotata!');
+  });
+
+  function highlight(el) {
+    el.focus();
+    el.style.borderColor = '#ef5350';
+    setTimeout(() => el.style.borderColor = '#b2dfdb', 1800);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
