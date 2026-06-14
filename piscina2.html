@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>🏊 Piscina Virgilio 1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #e8f7ff;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #0077b6 0%, #00b4d8 65%, #48cae4 100%);
+      color: white;
+      padding: 36px 20px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.12), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.08), transparent);
+    }
+    .header::after {
+      content: '';
+      position: absolute; bottom: 0; left: -60%; right: -60%; height: 50px;
+      background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(255,255,255,0.18), transparent);
+      animation: reflect 4s ease-in-out infinite;
+    }
+    @keyframes reflect {
+      0%,100% { transform: scaleX(1);    opacity: 0.5; }
+      50%      { transform: scaleX(1.06); opacity: 1;   }
+    }
+
+    .back-link {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,0.18); border-radius: 20px;
+      padding: 7px 15px; font-size: 0.76rem; font-weight: 700;
+      color: white; text-decoration: none; z-index: 2;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.30); }
+
+    .header .icons { font-size: 3.2rem; display: block; margin-bottom: 10px; line-height: 1; position: relative; }
+    .header h1 {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2); position: relative;
+    }
+    .header .subtitle {
+      font-size: 0.82rem; opacity: 0.9; margin-top: 6px;
+      font-weight: 500; letter-spacing: 0.3px; position: relative;
+    }
+
+    .sync-status {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-size: 0.7rem; margin-top: 12px; opacity: 0.92; position: relative;
+    }
+    .sync-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #fff; animation: blink 1.5s infinite; flex-shrink: 0;
+    }
+    .sync-dot.connected { background: #a5d6a7; animation: none; }
+    .sync-dot.error     { background: #ef9a9a; animation: none; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .bubbles {
+      position: absolute; bottom: 8px; left: 0; right: 0;
+      display: flex; justify-content: space-around; pointer-events: none;
+    }
+    .bubble { border-radius: 50%; background: rgba(255,255,255,0.22); animation: rise 3s ease-in infinite; }
+    .bubble:nth-child(1){ width:10px;height:10px; animation-delay:0s;   animation-duration:3s;   }
+    .bubble:nth-child(2){ width: 6px;height: 6px; animation-delay:0.6s; animation-duration:2.5s; }
+    .bubble:nth-child(3){ width: 8px;height: 8px; animation-delay:1.3s; animation-duration:3.5s; }
+    .bubble:nth-child(4){ width: 5px;height: 5px; animation-delay:0.3s; animation-duration:2.2s; }
+    .bubble:nth-child(5){ width:13px;height:13px; animation-delay:2s;   animation-duration:4s;   }
+    .bubble:nth-child(6){ width: 7px;height: 7px; animation-delay:2.6s; animation-duration:3.2s; }
+    @keyframes rise {
+      0%   { transform: translateY(0);    opacity: 0.9; }
+      100% { transform: translateY(-80px); opacity: 0;   }
+    }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #0077b6 0%, #00b4d8 65%, #48cae4 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 16px 12px 60px; }
+
+    /* ── NAME CARD ── */
+    .name-card {
+      background: white; border-radius: 18px; padding: 16px 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 22px rgba(0,119,182,0.10);
+      border: 2px solid #e1f5fe;
+    }
+    .name-card h3 {
+      font-size: 0.76rem; color: #0077b6;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      font-weight: 800; margin-bottom: 10px;
+    }
+    .name-input {
+      width: 100%; border: 2px solid #b3e5fc; border-radius: 10px;
+      padding: 11px 14px; font-size: 0.92rem; outline: none;
+      color: #333; transition: border-color 0.2s; font-family: inherit;
+      background: #fafeff;
+    }
+    .name-input:focus { border-color: #0077b6; background: #fff; }
+    .name-hint { font-size: 0.71rem; color: #90a4ae; margin-top: 8px; line-height: 1.5; }
+
+    .summary-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      color: white; padding: 4px 12px; border-radius: 20px;
+      font-size: 0.73rem; font-weight: 700; margin-top: 10px;
+      transition: all 0.3s;
+    }
+    .summary-badge.zero { background: #eceff1; color: #90a4ae; }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+      background: white; border-radius: 12px; padding: 9px 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px rgba(0,119,182,0.07);
+      border: 1.5px solid #e1f5fe;
+      font-size: 0.69rem; color: #546e7a;
+    }
+    .legend-title { font-weight: 800; color: #0277bd; margin-right: 2px; }
+    .legend-item  { display: flex; align-items: center; gap: 5px; font-weight: 600; }
+    .legend-swatch {
+      width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
+    }
+    .legend-swatch.green { background: #f2faf3; border: 2.5px solid #66bb6a; }
+    .legend-swatch.red   { background: #fff5f5; border: 2.5px solid #ef9a9a; }
+
+    /* ── MAIN FILTERS (Tutte, Le tue, Libere) ── */
+    .main-filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .filter-btn {
+      background: #fff; border: 2px solid #b3e5fc; border-radius: 12px;
+      padding: 10px 6px; font-size: 0.78rem; font-weight: 800; color: #0288d1;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .filter-btn:hover:not(.active) { background: #f0faff; border-color: #0288d1; }
+    .filter-btn.active {
+      background: #0288d1; color: #fff; border-color: transparent;
+      box-shadow: 0 3px 10px rgba(2,136,209,0.3);
+    }
+
+    /* ── MONTH TABS ── */
+    .month-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+      transition: opacity 0.2s ease, pointer-events 0.2s ease;
+    }
+    .month-tabs.disabled {
+      opacity: 0.4;
+      pointer-events: none; /* Impedisce il click quando attivo filtro Le Tue o Libere */
+    }
+
+    .month-tab {
+      background: white; border: 2.5px solid #b3e5fc;
+      border-radius: 16px; padding: 11px 10px;
+      font-size: 0.78rem; font-weight: 800; color: #0288d1;
+      cursor: pointer; transition: all 0.22s;
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-family: inherit; text-align: center;
+      white-space: nowrap;
+    }
+    .month-tab:hover:not(.active) { background: #f0faff; }
+
+    /* 🟢 Mese completamente prenotato */
+    .month-tab.tab-full:not(.active) {
+      border-color: #66bb6a;
+      background: linear-gradient(145deg, #f2faf3 0%, #e8f5e9 100%);
+      color: #2e7d32;
+    }
+    /* 🔴 Mese con settimane libere */
+    .month-tab.tab-partial:not(.active) {
+      border-color: #ef9a9a;
+      background: linear-gradient(145deg, #fffbfb 0%, #fff5f5 100%);
+      color: #c62828;
+    }
+
+    .month-tab.active {
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      color: white; border-color: transparent;
+      box-shadow: 0 4px 14px rgba(0,119,182,0.32);
+    }
+    .tab-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.28); border-radius: 10px;
+      padding: 1px 7px; font-size: 0.6rem; font-weight: 800; line-height: 1.6;
+      min-width: 28px; flex-shrink: 0;
+    }
+    .month-tab.tab-full:not(.active)    .tab-pill { background: #c8e6c9; color: #1b5e20; }
+    .month-tab.tab-partial:not(.active) .tab-pill { background: #ffcdd2; color: #b71c1c; }
+    .month-tab.active .tab-pill { background: rgba(255,255,255,0.28); color: white; }
+
+    /* ── MONTH HEADER ── */
+    .month-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; font-weight: 800; color: #0277bd;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 4px 0 12px 2px;
+    }
+    .month-label::after {
+      content: ''; flex: 1; height: 2px;
+      background: linear-gradient(90deg, #b3e5fc 0%, transparent 100%);
+      border-radius: 2px;
+    }
+
+    /* ── WEEK CARDS ── */
+    .week-card {
+      background: white; border-radius: 16px;
+      padding: 14px 16px 12px; margin-bottom: 10px;
+      box-shadow: 0 2px 12px rgba(0,119,182,0.07);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.2s;
+    }
+    .week-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,119,182,0.13);
+    }
+
+    .week-card.week-booked {
+      border: 2.5px solid #66bb6a;
+      background: linear-gradient(135deg, #f2faf3 0%, #e8f5e9 100%);
+      box-shadow: 0 3px 16px rgba(102,187,106,0.18);
+    }
+    .week-card.week-empty {
+      border: 2.5px solid #ef9a9a;
+      background: linear-gradient(135deg, #fffbfb 0%, #fff5f5 100%);
+      box-shadow: 0 3px 16px rgba(239,154,154,0.13);
+    }
+    .week-card.week-booked.has-me {
+      border-color: #43a047;
+      box-shadow: 0 3px 18px rgba(67,160,71,0.28);
+    }
+
+    .week-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .week-date { font-size: 0.93rem; font-weight: 700; color: #01579b; }
+    .week-meta { display: flex; align-items: center; gap: 6px; }
+    .week-pcount { font-size: 0.68rem; color: #80deea; font-weight: 600; }
+    .week-pcount strong { color: #00acc1; font-size: 0.8rem; }
+    .week-num {
+      font-size: 0.6rem; background: #e1f5fe; color: #0288d1;
+      padding: 2px 8px; border-radius: 10px; font-weight: 700;
+    }
+    .status-dot { font-size: 0.9rem; line-height: 1; flex-shrink: 0; }
+
+    .participants {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      min-height: 28px; margin-bottom: 10px; align-items: center;
+    }
+    .chip {
+      background: linear-gradient(135deg, #0288d1, #00b4d8);
+      color: white; padding: 4px 12px; border-radius: 20px;
+      font-size: 0.73rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 3px;
+      box-shadow: 0 1px 6px rgba(2,136,209,0.28);
+    }
+    .chip.mine {
+      background: linear-gradient(135deg, #388e3c, #66bb6a);
+      box-shadow: 0 1px 8px rgba(102,187,106,0.38);
+    }
+    .chip .x {
+      cursor: pointer; opacity: 0.75; font-size: 0.62rem;
+      margin-left: 3px; line-height: 1; transition: opacity 0.2s;
+    }
+    .chip .x:hover { opacity: 1; }
+    .empty-week { font-size: 0.72rem; color: #b0bec5; font-style: italic; }
+
+    .join-btn {
+      width: 100%; border: none; border-radius: 10px;
+      padding: 10px 14px; font-size: 0.83rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .join-btn.not-joined {
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      color: white;
+      box-shadow: 0 3px 12px rgba(0,119,182,0.25);
+    }
+    .join-btn.not-joined:hover { opacity: 0.88; transform: translateY(-1px); }
+    .join-btn.joined {
+      background: #e8f5e9; color: #2e7d32;
+      border: 1.5px solid #a5d6a7;
+    }
+    .join-btn.joined:hover { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #01579b; color: white;
+      padding: 10px 22px; border-radius: 24px;
+      font-size: 0.83rem; font-weight: 600;
+      transition: transform 0.3s ease; z-index: 999;
+      white-space: nowrap; max-width: calc(100vw - 32px);
+      box-shadow: 0 6px 24px rgba(1,87,155,0.4);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .page-footer {
+      text-align: center; font-size: 0.7rem; color: #b0bec5;
+      padding: 6px 0 20px; letter-spacing: 0.3px;
+    }
+    .no-results {
+      text-align: center; font-size: 0.88rem; color: #546e7a;
+      font-style: italic; padding: 30px 10px; background: white;
+      border-radius: 16px; border: 2px dashed #b3e5fc;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <span class="icons">🏊 ☀️ 💦</span>
+  <h1>Piscina Virgilio 1</h1>
+  <div class="subtitle">Segna le settimane in cui sei disponibile</div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Connessione in corso…</span>
+  </div>
+  <div class="bubbles">
+    <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+    <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  </div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#e8f7ff"/>
+    <path d="M0,50 C220,18 440,66 660,46 C880,26 1100,62 1320,44 L1440,50 L1440,72 L0,72 Z" fill="#e8f7ff" opacity="0.55"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <div class="name-card">
+    <h3>👤 Il tuo nome</h3>
+    <input class="name-input" type="text" id="user-name"
+           placeholder="Es. Marco, Giulia…" maxlength="30"
+           autocomplete="off" spellcheck="false"/>
+    <div class="name-hint">✏️ Inserisci il tuo nome, poi premi il pulsante sulla settimana che vuoi prenotare. Il tuo nome viene ricordato automaticamente.</div>
+    <div id="my-summary" class="summary-badge zero">0 settimane selezionate</div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-title">Legenda:</span>
+    <span class="legend-item"><span class="legend-swatch green"></span>Prenotata</span>
+    <span class="legend-item"><span class="legend-swatch red"></span>Libera</span>
+  </div>
+
+  <div class="main-filters">
+    <button class="filter-btn active" id="filter-all">🗓️ Tutte</button>
+    <button class="filter-btn" id="filter-mine">🏊 Le tue</button>
+    <button class="filter-btn" id="filter-empty">🔓 Libere</button>
+  </div>
+
+  <div class="month-tabs" id="month-tabs"></div>
+
+  <div id="weeks-container"></div>
+
+</div>
+
+<div class="page-footer">🌊 Aggiornato in tempo reale • Piscina Condominiale</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  firebase.initializeApp({
+    apiKey:            "AIzaSyAfOMeAkXUIandLUhCR8nfyELOPVRyD3WU",
+    authDomain:        "lista-spesa-b9eb1.firebaseapp.com",
+    databaseURL:       "https://lista-spesa-b9eb1-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "lista-spesa-b9eb1",
+    storageBucket:     "lista-spesa-b9eb1.firebasestorage.app",
+    messagingSenderId: "468690890938",
+    appId:             "1:468690890938:web:048be7f27779d8862d9283"
+  });
+  const db         = firebase.database();
+  const piscinaRef = db.ref('piscina');
+
+  const WEEKS = [
+    { id:'w01', label:'Lun 8 - Dom 14 Giugno',              month:'Giugno'    },
+    { id:'w02', label:'Lun 15 - Dom 21 Giugno',             month:'Giugno'    },
+    { id:'w03', label:'Lun 22 - Dom 28 Giugno',             month:'Giugno'    },
+    { id:'w04', label:'Lun 29 Giugno - Dom 5 Luglio',       month:'Giugno'    },
+    { id:'w05', label:'Lun 6 - Dom 12 Luglio',              month:'Luglio'    },
+    { id:'w06', label:'Lun 13 - Dom 19 Luglio',             month:'Luglio'    },
+    { id:'w07', label:'Lun 20 - Dom 26 Luglio',             month:'Luglio'    },
+    { id:'w08', label:'Lun 27 Luglio - Dom 2 Agosto',       month:'Luglio'    },
+    { id:'w09', label:'Lun 3 - Dom 9 Agosto',               month:'Agosto'    },
+    { id:'w10', label:'Lun 10 - Dom 16 Agosto',             month:'Agosto'    },
+    { id:'w11', label:'Lun 17 - Dom 23 Agosto',             month:'Agosto'    },
+    { id:'w12', label:'Lun 24 - Dom 30 Agosto',             month:'Agosto'    },
+    { id:'w13', label:'Lun 31 Agosto - Dom 6 Settembre',    month:'Agosto'    },
+    { id:'w14', label:'Lun 7 - Dom 13 Settembre',           month:'Settembre' },
+    { id:'w15', label:'Lun 14 - Dom 20 Settembre',          month:'Settembre' },
+    { id:'w16', label:'Lun 21 - Dom 27 Settembre',          month:'Settembre' },
+    { id:'w17', label:'Lun 28 Settembre - Dom 4 Ottobre',   month:'Settembre' },
+  ];
+
+  const MONTHS      = ['Giugno', 'Luglio', 'Agosto', 'Settembre'];
+  const MONTH_ICONS = { Giugno:'🌞', Luglio:'☀️', Agosto:'🏖️', Settembre:'🍂' };
+
+  let weekData     = {};
+  let activeMonth  = MONTHS[0];
+  let currentFilter = 'all'; // 'all', 'mine', 'empty'
+
+  const nameInput = document.getElementById('user-name');
+  nameInput.value = localStorage.getItem('piscinaName') || '';
+  nameInput.addEventListener('input', () => {
+    localStorage.setItem('piscinaName', nameInput.value.trim());
+    render();
+  });
+
+  // Listener pulsanti filtro superiore
+  document.getElementById('filter-all').addEventListener('click', () => { setFilter('all'); });
+  document.getElementById('filter-mine').addEventListener('click', () => { setFilter('mine'); });
+  document.getElementById('filter-empty').addEventListener('click', () => { setFilter('empty'); });
+
+  function setFilter(filterType) {
+    currentFilter = filterType;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    if(filterType === 'all') document.getElementById('filter-all').classList.add('active');
+    if(filterType === 'mine') document.getElementById('filter-mine').classList.add('active');
+    if(filterType === 'empty') document.getElementById('filter-empty').classList.add('active');
+    render();
+  }
+
+  db.ref('.info/connected').on('value', snap => {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    if (snap.val()) {
+      dot.className   = 'sync-dot connected';
+      lbl.textContent = '🟢 Sincronizzato in tempo reale';
+    } else {
+      dot.className   = 'sync-dot error';
+      lbl.textContent = '🔴 Offline — riconnessione…';
+    }
+  });
+
+  piscinaRef.on('value', snap => {
+    weekData = snap.val() || {};
+    render();
+  });
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function myName()       { return nameInput.value.trim(); }
+  function myNameLc()     { return myName().toLowerCase(); }
+  function getEntries(id) { return weekData[id] ? Object.entries(weekData[id]) : []; }
+  function isJoined(id)   {
+    const me = myNameLc();
+    return !!me && getEntries(id).some(([,n]) => n.toLowerCase() === me);
+  }
+
+  function bookedInMonth(month) {
+    return WEEKS.filter(w => w.month === month && getEntries(w.id).length > 0).length;
+  }
+  function totalWeeksInMonth(month) {
+    return WEEKS.filter(w => w.month === month).length;
+  }
+
+  /* ── render tab mesi ── */
+  function renderTabs() {
+    const bar = document.getElementById('month-tabs');
+    bar.innerHTML = '';
+    
+    // Se il filtro è "mine" o "empty", disattiviamo graficamente la barra dei mesi
+    if (currentFilter !== 'all') {
+      bar.classList.add('disabled');
+    } else {
+      bar.classList.remove('disabled');
+    }
+
+    MONTHS.forEach(month => {
+      const booked = bookedInMonth(month);
+      const total  = totalWeeksInMonth(month);
+      const statusClass = booked === total ? 'tab-full' : 'tab-partial';
+      const btn = document.createElement('button');
+      btn.className = `month-tab ${statusClass}${month === activeMonth ? ' active' : ''}`;
+      btn.innerHTML = `${MONTH_ICONS[month]} ${month}<span class="tab-pill">${booked}/${total}</span>`;
+      btn.addEventListener('click', () => { activeMonth = month; render(); });
+      bar.appendChild(btn);
+    });
+  }
+
+  /* ── render settimane ── */
+  function render() {
+    renderTabs();
+
+    const container   = document.getElementById('weeks-container');
+    container.innerHTML = '';
+    const totalJoined = WEEKS.filter(w => isJoined(w.id)).length;
+
+    // Logica di filtraggio principale
+    let filteredWeeks = WEEKS;
+    if (currentFilter === 'all') {
+      // Mostra solo le settimane del mese attivo
+      filteredWeeks = WEEKS.filter(w => w.month === activeMonth);
+    } else if (currentFilter === 'mine') {
+      // Mostra TUTTE le tue settimane di qualsiasi mese
+      filteredWeeks = WEEKS.filter(w => isJoined(w.id));
+    } else if (currentFilter === 'empty') {
+      // Mostra TUTTE le settimane ancora libere di qualsiasi mese
+      filteredWeeks = WEEKS.filter(w => getEntries(w.id).length === 0);
+    }
+
+    // Label dinamico sopra la lista delle card
+    const hdr = document.createElement('div');
+    hdr.className = 'month-label';
+    if (currentFilter === 'all') {
+      hdr.textContent = `${MONTH_ICONS[activeMonth] || ''} ${activeMonth}`;
+    } else if (currentFilter === 'mine') {
+      hdr.textContent = `🏊 Le tue settimane salvate (Tutta la stagione)`;
+    } else if (currentFilter === 'empty') {
+      hdr.textContent = `🔓 Settimane interamente libere (Tutta la stagione)`;
+    }
+    container.appendChild(hdr);
+
+    if (filteredWeeks.length === 0) {
+      const emptyMsg = document.createElement('div');
+      emptyMsg.className = 'no-results';
+      if (currentFilter === 'mine') {
+        emptyMsg.innerHTML = myName() 
+          ? "Non risulti iscritto a nessuna settimana in tutta la stagione! 🤔" 
+          : "Inserisci il tuo nome in alto per vedere le tue settimane. 👤";
+      } else if (currentFilter === 'empty') {
+        emptyMsg.textContent = "Incredibile! Tutte le settimane della stagione sono state occupate! 🥳";
+      }
+      container.appendChild(emptyMsg);
+    }
+
+    filteredWeeks.forEach(week => {
+      const globalIdx = WEEKS.findIndex(w => w.id === week.id);
+      const entries   = getEntries(week.id);
+      const names     = entries.map(([,n]) => n);
+      const joined    = isJoined(week.id);
+
+      const bookingClass = names.length > 0 ? 'week-booked' : 'week-empty';
+      const meClass      = joined ? ' has-me' : '';
+      const statusDot    = names.length > 0 ? '🟢' : '🔴';
+
+      const chipsHtml = names.length === 0
+        ? '<span class="empty-week">Nessuno ancora — sii il primo! 🌊</span>'
+        : names.map(name => {
+            const isMe = myName() && name.toLowerCase() === myNameLc();
+            return `<span class="chip${isMe ? ' mine' : ''}">
+              ${esc(name)}
+              ${isMe ? `<span class="x" data-week="${week.id}" data-name="${esc(name)}" title="Rimuoviti">✕</span>` : ''}
+            </span>`;
+          }).join('');
+
+      // Mostra un piccolo badge del mese solo se stiamo guardando la vista globale (mine o empty)
+      const monthBadge = currentFilter !== 'all' 
+        ? `<span class="week-num" style="background:#fff3e0; color:#e65100; margin-right:4px; font-weight:800;">${week.month.toUpperCase()}</span>` 
+        : '';
+
+      const card = document.createElement('div');
+      card.className = `week-card ${bookingClass}${meClass}`;
+      card.innerHTML = `
+        <div class="week-header">
+          <span class="week-date">📅 ${week.label}</span>
+          <div class="week-meta">
+            <span class="week-pcount"><strong>${names.length}</strong> 👤</span>
+            ${monthBadge}
+            <span class="week-num">W${globalIdx + 1}</span>
+            <span class="status-dot">${statusDot}</span>
+          </div>
+        </div>
+        <div class="participants">${chipsHtml}</div>
+        <button class="join-btn ${joined ? 'joined' : 'not-joined'}" data-week="${week.id}">
+          ${joined ? '✅ Sei iscritto — premi per cancellarti' : '➕ Iscrivimi a questa settimana'}
+        </button>`;
+      container.appendChild(card);
+    });
+
+    const badge = document.getElementById('my-summary');
+    badge.className = 'summary-badge' + (totalJoined === 0 ? ' zero' : '');
+    badge.textContent = totalJoined === 0
+      ? '0 settimane selezionate'
+      : `🏊 ${totalJoined} settiman${totalJoined === 1 ? 'a' : 'e'} selezionat${totalJoined === 1 ? 'a' : 'e'}`;
+
+    container.querySelectorAll('.join-btn').forEach(btn =>
+      btn.addEventListener('click', e => { e.stopPropagation(); handleToggle(btn.dataset.week); })
+    );
+    container.querySelectorAll('.x').forEach(x =>
+      x.addEventListener('click', e => { e.stopPropagation(); handleRemove(x.dataset.week, x.dataset.name); })
+    );
+  }
+
+  function requireName() {
+    if (!myName()) {
+      nameInput.focus();
+      nameInput.style.borderColor = '#ef5350';
+      setTimeout(() => nameInput.style.borderColor = '#b3e5fc', 1800);
+      showToast('⚠️ Inserisci prima il tuo nome!');
+      return false;
+    }
+    return true;
+  }
+
+  function handleToggle(weekId) {
+    if (!requireName()) return;
+    const entries  = getEntries(weekId);
+    const existing = entries.find(([,n]) => n.toLowerCase() === myNameLc());
+    if (existing) {
+      piscinaRef.child(weekId).child(existing[0]).remove();
+      showToast('❌ Rimosso dalla settimana');
+    } else {
+      piscinaRef.child(weekId).push(myName());
+      showToast('✅ Iscritto!');
+    }
+  }
+
+  function handleRemove(weekId, name) {
+    if (!requireName()) return;
+    if (name.toLowerCase() !== myNameLc()) {
+      showToast('⚠️ Puoi rimuovere solo il tuo nome');
+      return;
+    }
+    const entries  = getEntries(weekId);
+    const existing = entries.find(([,n]) => n.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      piscinaRef.child(weekId).child(existing[0]).remove();
+      showToast('❌ Rimosso dalla settimana');
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
