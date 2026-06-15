@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>🧩 Sudoku Condominiale</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fffef2;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #ffeb3b 0%, #ffc107 65%, #ff9800 100%);
+      color: #3e2723;
+      padding: 36px 20px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.2), transparent);
+    }
+
+    .back-link {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,0.4); border-radius: 20px;
+      padding: 7px 15px; font-size: 0.76rem; font-weight: 700;
+      color: #3e2723; text-decoration: none; z-index: 2;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.6); }
+
+    .header .icons { font-size: 3.2rem; display: block; margin-bottom: 10px; line-height: 1; position: relative; }
+    .header h1 {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px;
+      text-shadow: 0 1px 4px rgba(255,255,255,0.4); position: relative;
+    }
+    .header .subtitle {
+      font-size: 0.82rem; opacity: 0.9; margin-top: 6px;
+      font-weight: 600; letter-spacing: 0.3px; position: relative;
+    }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #ffeb3b 0%, #ffc107 65%, #ff9800 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 16px 12px 60px; }
+
+    /* ── CARD IMPOSTAZIONI ── */
+    .card {
+      background: white; border-radius: 18px; padding: 16px 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 6px 20px rgba(255, 193, 7, 0.08);
+      border: 2px solid #fffde7;
+    }
+    .card h3 {
+      font-size: 0.76rem; color: #e65100;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      font-weight: 800; margin-bottom: 12px;
+    }
+
+    .diff-select {
+      width: 100%; border: 2px solid #fff9c4; border-radius: 10px;
+      padding: 11px 14px; font-size: 0.92rem; outline: none;
+      color: #333; transition: border-color 0.2s; font-family: inherit;
+      background: #fffdf7; font-weight: 600; cursor: pointer;
+    }
+    .diff-select:focus { border-color: #ffb300; background: #fff; }
+
+    .action-btn {
+      width: 100%; background: linear-gradient(135deg, #ffb300, #ff8f00);
+      color: #3e2723; border: none; border-radius: 10px;
+      padding: 12px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(255,143,0,0.2);
+      transition: all 0.2s;
+    }
+    .action-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ── GRIGLIA SUDOKU ── */
+    .sudoku-container {
+      display: flex; justify-content: center; margin: 20px 0; width: 100%;
+    }
+    .sudoku-grid {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      width: 100%;
+      max-width: 440px;
+      aspect-ratio: 1 / 1;
+      background: #3e2723;
+      padding: 3px; /* Bordo perimetrale esterno uniforme */
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(93, 64, 55, 0.15);
+      
+      /* Gestione intelligente degli spazi senza usare i margini sulle celle */
+      gap: 1px; 
+      position: relative;
+    }
+
+    /* Linee spesse verticali per i blocchi 3x3 (create con pseudo-elementi geometrici perfetti) */
+    .sudoku-grid::before, .sudoku-grid::after {
+      content: '';
+      position: absolute;
+      background: #3e2723;
+      z-index: 1;
+      pointer-events: none;
+    }
+    /* Linee verticali spesse dopo la colonna 3 e la colonna 6 */
+    .sudoku-grid::before {
+      top: 0; bottom: 0;
+      left: calc(33.333% - 1px);
+      width: 3px;
+      box-shadow: calc(440px / 3) 0 0 #3e2723; /* Ripete la linea sulla seconda sezione */
+    }
+    /* Linee orizzontali spesse dopo la riga 3 e la riga 6 */
+    .sudoku-grid::after {
+      left: 0; right: 0;
+      top: calc(33.333% - 1px);
+      height: 3px;
+      box-shadow: 0 calc(440px / 3) 0 #3e2723;
+    }
+
+    /* Se lo schermo è piccolo, adatta l'effetto ombra delle linee 3x3 in proporzione */
+    @media (max-width: 440px) {
+      .sudoku-grid::before { box-shadow: calc((100vw - 30px) / 3) 0 0 #3e2723; }
+      .sudoku-grid::after { box-shadow: 0 calc((100vw - 30px) / 3) 0 #3e2723; }
+    }
+
+    .sudoku-cell {
+      background: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; font-weight: 700; color: #3e2723;
+      aspect-ratio: 1 / 1;
+      text-align: center; cursor: pointer; user-select: none;
+      transition: all 0.15s;
+      z-index: 0; /* Rimane sotto le linee di blocco 3x3 */
+    }
+
+    /* Stati speciali delle celle */
+    .sudoku-cell.fixed { background: #fffdf0; color: #795548; cursor: not-allowed; }
+    .sudoku-cell.selected { background: #ffe082 !important; z-index: 2; } /* Sopra le linee quando selezionata */
+    .sudoku-cell.user-typed { color: #d35400; }
+    .sudoku-cell.invalid { background: #ffcdd2 !important; color: #c62828; }
+    /* ── TASTIERA NUMERICA VIRTUALE ── */
+    .keypad {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+      max-width: 440px; margin: 16px auto 0;
+    }
+    .key-btn {
+      background: white; border: 2px solid #fff9c4; border-radius: 10px;
+      padding: 12px 0; font-size: 1.1rem; font-weight: 700; color: #e65100;
+      cursor: pointer; transition: all 0.15s; text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .key-btn:hover { background: #fffde7; border-color: #ffb300; }
+    .key-btn.clear { background: #fff3e0; border-color: #ffcc80; grid-column: span 1; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #4e342e; color: white; padding: 10px 22px; border-radius: 24px;
+      font-size: 0.83rem; font-weight: 600; transition: transform 0.3s ease; z-index: 999;
+      box-shadow: 0 6px 24px rgba(78,52,46,0.3); white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .page-footer { text-align: center; font-size: 0.7rem; color: #8d6e63; padding: 20px 0; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <span class="icons">🧩 🧠 ✏️</span>
+  <h1>Sudoku Condominiale</h1>
+  <div class="subtitle">Rilassa la mente con una sfida logica quotidiana</div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#fffef2"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>⚙️ Seleziona Difficoltà</h3>
+    <select class="diff-select" id="difficulty-select">
+      <option value="easy">🟢 Facile (Più numeri iniziali)</option>
+      <option value="medium" selected>🟡 Medio (Bilanciato)</option>
+      <option value="hard">🔴 Difficile (Pochi indizi)</option>
+    </select>
+    <button class="action-btn" id="new-game-btn">🔄 Nuova Partita</button>
+  </div>
+
+  <div class="sudoku-container">
+    <div class="sudoku-grid" id="sudoku-grid"></div>
+  </div>
+
+  <div class="keypad">
+    <button class="key-btn" data-val="1">1</button>
+    <button class="key-btn" data-val="2">2</button>
+    <button class="key-btn" data-val="3">3</button>
+    <button class="key-btn" data-val="4">4</button>
+    <button class="key-btn" data-val="5">5</button>
+    <button class="key-btn" data-val="6">6</button>
+    <button class="key-btn" data-val="7">7</button>
+    <button class="key-btn" data-val="8">8</button>
+    <button class="key-btn" data-val="9">9</button>
+    <button class="key-btn clear" data-val="0">✕</button>
+  </div>
+
+</div>
+
+<div class="page-footer">🧩 Rompicapo • Relax in Condominio</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  let solution = [];
+  let board = [];
+  let fixedMask = [];
+  let selectedIdx = null;
+
+  const gridEl = document.getElementById('sudoku-grid');
+  const diffSelect = document.getElementById('difficulty-select');
+
+  // Avvio automatico al refresh
+  window.addEventListener('DOMContentLoaded', () => {
+    initGame();
+  });
+
+  document.getElementById('new-game-btn').addEventListener('click', () => {
+    initGame();
+    showToast("🎲 Nuovo schema generato!");
+  });
+
+  function initGame() {
+    selectedIdx = null;
+    generateSudoku();
+    renderBoard();
+  }
+
+  // Semplice ed efficiente generatore/risolutore di Sudoku valido
+  function generateSudoku() {
+    // Svuota matrici
+    solution = Array(81).fill(0);
+    fillDiagonalBlocks();
+    solveSudoku(0);
+    
+    // Copia la soluzione finale
+    board = [...solution];
+    
+    // Imposta quanti numeri togliere in base alla difficoltà
+    let diff = diffSelect.value;
+    let cellsToRemove = 40; // Default medio
+    if (diff === 'easy') cellsToRemove = 30;
+    if (diff === 'hard') cellsToRemove = 52;
+
+    fixedMask = Array(81).fill(true);
+    
+    let removed = 0;
+    while (removed < cellsToRemove) {
+      let rIdx = Math.floor(Math.random() * 81);
+      if (board[rIdx] !== 0) {
+        board[rIdx] = 0;
+        fixedMask[rIdx] = false;
+        removed++;
+      }
+    }
+  }
+
+  function fillDiagonalBlocks() {
+    for (let i = 0; i < 9; i += 3) {
+      let numList = [1,2,3,4,5,6,7,8,9];
+      // Mescola
+      numList.sort(() => Math.random() - 0.5);
+      let counter = 0;
+      for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+          solution[(i + row) * 9 + (i + col)] = numList[counter++];
+        }
+      }
+    }
+  }
+
+  function isValid(grid, idx, val) {
+    let row = Math.floor(idx / 9);
+    let col = idx % 9;
+    
+    for (let i = 0; i < 9; i++) {
+      if (grid[row * 9 + i] === val && (row * 9 + i) !== idx) return false;
+      if (grid[i * 9 + col] === val && (i * 9 + col) !== idx) return false;
+    }
+    
+    let boxRow = Math.floor(row / 3) * 3;
+    let boxCol = Math.floor(col / 3) * 3;
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        let curIdx = (boxRow + r) * 9 + (boxCol + c);
+        if (grid[curIdx] === val && curIdx !== idx) return false;
+      }
+    }
+    return true;
+  }
+
+  function solveSudoku(idx) {
+    if (idx === 81) return true;
+    if (solution[idx] !== 0) return solveSudoku(idx + 1);
+
+    let nums = [1,2,3,4,5,6,7,8,9].sort(() => Math.random() - 0.5);
+    for (let i = 0; i < 9; i++) {
+      if (isValid(solution, idx, nums[i])) {
+        solution[idx] = nums[i];
+        if (solveSudoku(idx + 1)) return true;
+        solution[idx] = 0;
+      }
+    }
+    return false;
+  }
+
+  // Disegna graficamente la scacchiera
+  function renderBoard() {
+    gridEl.innerHTML = '';
+    for (let i = 0; i < 81; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'sudoku-cell';
+      
+      if (board[i] !== 0) {
+        cell.textContent = board[i];
+        if (fixedMask[i]) {
+          cell.classList.add('fixed');
+        } else {
+          cell.classList.add('user-typed');
+        }
+      }
+
+      // Evidenzia errori in tempo reale
+      if (board[i] !== 0 && !isValid(board, i, board[i])) {
+        cell.classList.add('invalid');
+      }
+
+      if (i === selectedIdx) {
+        cell.classList.add('selected');
+      }
+
+      cell.addEventListener('click', () => {
+        if (fixedMask[i]) return; // Le celle fisse non si selezionano
+        selectedIdx = (selectedIdx === i) ? null : i;
+        renderBoard();
+      });
+
+      gridEl.appendChild(cell);
+    }
+  }
+
+  // Gestione input della tastiera virtuale
+  document.querySelectorAll('.key-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      if (selectedIdx === null) {
+        showToast("💡 Tocca prima una cella vuota della griglia!");
+        return;
+      }
+      
+      let val = parseInt(button.dataset.val);
+      board[selectedIdx] = val === 0 ? 0 : val;
+      
+      renderBoard();
+      checkVictory();
+    });
+  });
+
+  // Gestione input da tastiera fisica PC
+  window.addEventListener('keydown', (e) => {
+    if (selectedIdx === null) return;
+    if (e.key >= '1' && e.key <= '9') {
+      board[selectedIdx] = parseInt(e.key);
+      renderBoard();
+      checkVictory();
+    } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+      board[selectedIdx] = 0;
+      renderBoard();
+    }
+  });
+
+  function checkVictory() {
+    // Verifica se la tabella è piena e priva di errori
+    if (board.includes(0)) return;
+    
+    for (let i = 0; i < 81; i++) {
+      if (!isValid(board, i, board[i])) return;
+    }
+    
+    showToast("🎉 Grandioso! Sudoku completato correttamente! 🏆");
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>
