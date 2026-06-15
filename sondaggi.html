@@ -10,14 +10,14 @@
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f4f9fc;
+      background: #fffef2;
       min-height: 100vh;
     }
 
     /* ── HEADER ── */
     .header {
-      background: linear-gradient(160deg, #4a4e69 0%, #7209b7 65%, #b5179e 100%);
-      color: white;
+      background: linear-gradient(160deg, #ffeb3b 0%, #ffc107 65%, #ff9800 100%);
+      color: #3e2723;
       padding: 36px 20px 24px;
       text-align: center;
       position: relative;
@@ -27,46 +27,46 @@
       content: '';
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.12), transparent),
-        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.08), transparent);
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.4), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.2), transparent);
     }
 
     .back-link {
       position: absolute; top: 14px; left: 14px;
-      background: rgba(255,255,255,0.18); border-radius: 20px;
+      background: rgba(255,255,255,0.4); border-radius: 20px;
       padding: 7px 15px; font-size: 0.76rem; font-weight: 700;
-      color: white; text-decoration: none; z-index: 2;
+      color: #3e2723; text-decoration: none; z-index: 2;
       backdrop-filter: blur(4px);
       transition: background 0.2s;
       display: inline-flex; align-items: center; gap: 4px;
     }
-    .back-link:hover { background: rgba(255,255,255,0.30); }
+    .back-link:hover { background: rgba(255,255,255,0.6); }
 
     .header .icons { font-size: 3.2rem; display: block; margin-bottom: 10px; line-height: 1; position: relative; }
     .header h1 {
       font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.2); position: relative;
+      text-shadow: 0 1px 4px rgba(255,255,255,0.4); position: relative;
     }
     .header .subtitle {
       font-size: 0.82rem; opacity: 0.9; margin-top: 6px;
-      font-weight: 500; letter-spacing: 0.3px; position: relative;
+      font-weight: 600; letter-spacing: 0.3px; position: relative;
     }
 
     .sync-status {
       display: flex; align-items: center; justify-content: center;
-      gap: 6px; font-size: 0.7rem; margin-top: 12px; opacity: 0.92; position: relative;
+      gap: 6px; font-size: 0.7rem; margin-top: 12px; opacity: 0.95; position: relative;
     }
     .sync-dot {
       width: 8px; height: 8px; border-radius: 50%;
-      background: #fff; animation: blink 1.5s infinite; flex-shrink: 0;
+      background: #3e2723; animation: blink 1.5s infinite; flex-shrink: 0;
     }
-    .sync-dot.connected { background: #a5d6a7; animation: none; }
-    .sync-dot.error     { background: #ef9a9a; animation: none; }
+    .sync-dot.connected { background: #2ebd59; animation: none; }
+    .sync-dot.error     { background: #d9381e; animation: none; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
     .wave-divider {
       display: block; line-height: 0; overflow: hidden;
-      background: linear-gradient(160deg, #4a4e69 0%, #7209b7 65%, #b5179e 100%);
+      background: linear-gradient(160deg, #ffeb3b 0%, #ffc107 65%, #ff9800 100%);
     }
     .wave-divider svg { display: block; width: 100%; }
 
@@ -76,29 +76,29 @@
     .card {
       background: white; border-radius: 18px; padding: 16px 18px;
       margin-bottom: 14px;
-      box-shadow: 0 4px 22px rgba(114, 9, 183, 0.05);
-      border: 2px solid #f3e8ff;
+      box-shadow: 0 4px 22px rgba(255, 193, 7, 0.06);
+      border: 2px solid #fffde7;
     }
     .card h3 {
-      font-size: 0.76rem; color: #7209b7;
+      font-size: 0.76rem; color: #e65100;
       text-transform: uppercase; letter-spacing: 0.9px;
       font-weight: 800; margin-bottom: 10px;
     }
 
     .input-text {
-      width: 100%; border: 2px solid #e9d5ff; border-radius: 10px;
+      width: 100%; border: 2px solid #fff9c4; border-radius: 10px;
       padding: 11px 14px; font-size: 0.92rem; outline: none;
       color: #333; transition: border-color 0.2s; font-family: inherit;
-      background: #fdfbff;
+      background: #fffdf7;
     }
-    .input-text:focus { border-color: #7209b7; background: #fff; }
+    .input-text:focus { border-color: #ffb300; background: #fff; }
 
     /* ── CREAZIONE SONDAGGIO ── */
     .crea-btn {
-      width: 100%; background: linear-gradient(135deg, #7209b7, #b5179e);
-      color: white; border: none; border-radius: 10px;
+      width: 100%; background: linear-gradient(135deg, #ffb300, #ff8f00);
+      color: #3e2723; border: none; border-radius: 10px;
       padding: 12px; font-size: 0.88rem; font-weight: 700;
-      cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(114,9,183,0.2);
+      cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(255,143,0,0.2);
       transition: all 0.2s;
     }
     .crea-btn:hover { opacity: 0.9; transform: translateY(-1px); }
@@ -106,93 +106,102 @@
     .opzioni-setup { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
     .opzione-input-row { display: flex; gap: 6px; }
     .remove-opt-btn {
-      background: #ffebee; color: #c62828; border: 1px solid #ef9a9a;
+      background: #fffde7; color: #e65100; border: 1px solid #fff59d;
       border-radius: 10px; padding: 0 12px; cursor: pointer; font-weight: bold;
     }
 
+    .filter-btn {
+      background: #fff; border: 2px solid #fff9c4; border-radius: 12px;
+      padding: 10px 6px; font-size: 0.78rem; font-weight: 800; color: #f57c00;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .filter-btn:hover { background: #fffde7; border-color: #ffb300; }
+
     .toggle-container {
       display: flex; align-items: center; gap: 8px;
-      margin-top: 10px; font-size: 0.82rem; color: #4a4e69; font-weight: 600;
+      margin-top: 10px; font-size: 0.82rem; color: #5d4037; font-weight: 600;
     }
     .toggle-container input { width: 16px; height: 16px; cursor: pointer; }
 
     /* ── LISTA SONDAGGI ── */
     .section-title {
-      font-size: 0.78rem; font-weight: 800; color: #4a4e69;
+      font-size: 0.78rem; font-weight: 800; color: #5d4037;
       text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 12px 2px;
       display: flex; align-items: center; gap: 6px;
     }
     .section-title::after {
       content: ''; flex: 1; height: 2px;
-      background: linear-gradient(90deg, #e9d5ff 0%, transparent 100%);
+      background: linear-gradient(90deg, #fff9c4 0%, transparent 100%);
     }
 
     .sondaggio-card {
       background: white; border-radius: 16px; padding: 16px; margin-bottom: 14px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.03); border: 2px solid #f3e8ff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.02); border: 2px solid #fffde7;
     }
     .sondaggio-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .sondaggio-titolo { font-size: 1rem; font-weight: 700; color: #240046; margin-bottom: 2px; }
-    .sondaggio-autore { font-size: 0.68rem; color: #9a8c98; }
-    .badge-tipo { font-size: 0.58rem; background: #f3e8ff; color: #7209b7; padding: 2px 6px; border-radius: 8px; font-weight: 700; }
+    .sondaggio-titolo { font-size: 1rem; font-weight: 700; color: #4e342e; margin-bottom: 2px; }
+    .sondaggio-autore { font-size: 0.68rem; color: #8d6e63; }
+    .badge-tipo { font-size: 0.58rem; background: #fffde7; color: #f57f17; padding: 2px 6px; border-radius: 8px; font-weight: 700; border: 1px solid #fff59d; }
 
     /* OPZIONI DI VOTO */
     .voto-opzione {
       margin-bottom: 10px; position: relative; cursor: pointer;
     }
     .voto-meta {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 4px; font-size: 0.82rem; font-weight: 600; color: #4a4e69;
-      position: relative; z-index: 2; padding: 0 8px;
+      position: relative; z-index: 2; padding: 0 10px; font-size: 0.82rem; font-weight: 600; color: #4e342e;
+      transition: color 0.2s;
     }
     .progress-bar-bg {
-      width: 100%; height: 34px; background: #f7f4fa; border: 1.5px solid #e9d5ff;
+      width: 100%; height: 36px; background: #ffffe9; border: 1.5px solid #fff9c4;
       border-radius: 8px; overflow: hidden; position: relative; display: flex; align-items: center;
       transition: all 0.2s;
     }
     .progress-bar-fill {
-      height: 100%; background: linear-gradient(90deg, #e0aaff, #c77dff);
+      height: 100%; background: linear-gradient(90deg, #fffde7, #fff59d);
       width: 0%; transition: width 0.4s ease-out; position: absolute; left: 0; top: 0;
     }
+    
+    /* Stato Selezionato: Chiaro, solare e perfettamente contrastato */
     .progress-bar-bg.voto-selezionato {
-      border-color: #7209b7; background: #faf5ff;
+      border-color: #ff9800; background: #fffbf0;
     }
     .progress-bar-bg.voto-selezionato .progress-bar-fill {
-      background: linear-gradient(90deg, #b5179e, #7209b7);
+      background: linear-gradient(90deg, #ffe082, #ffd54f);
     }
 
     .voti-nomi {
-      font-size: 0.68rem; color: #7209b7; margin-top: 3px; padding: 0 8px;
+      font-size: 0.68rem; color: #ef6c00; margin-top: 4px; padding: 0 10px;
       display: flex; flex-wrap: wrap; gap: 4px;
     }
-    .voto-chip { background: #f3e8ff; padding: 1px 6px; border-radius: 6px; }
+    .voto-chip { background: #fffde7; padding: 1px 6px; border-radius: 6px; color: #f57f17; font-weight: 600; border: 1px solid #fff9c4; }
 
     .del-sondaggio-btn {
-      background: none; border: none; color: #ef9a9a; cursor: pointer; font-size: 0.85rem; padding: 2px;
+      background: none; border: none; color: #ffb300; cursor: pointer; font-size: 0.85rem; padding: 2px;
       transition: color 0.2s;
     }
-    .del-sondaggio-btn:hover { color: #c62828; }
+    .del-sondaggio-btn:hover { color: #d84315; }
 
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
-      background: #240046; color: white; padding: 10px 22px; border-radius: 24px;
+      background: #4e342e; color: white; padding: 10px 22px; border-radius: 24px;
       font-size: 0.83rem; font-weight: 600; transition: transform 0.3s ease; z-index: 999;
-      box-shadow: 0 6px 24px rgba(36,0,70,0.4); white-space: nowrap;
+      box-shadow: 0 6px 24px rgba(78,52,46,0.3); white-space: nowrap;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
     .no-results {
-      text-align: center; font-size: 0.88rem; color: #9a8c98; font-style: italic;
-      padding: 30px 10px; background: white; border-radius: 16px; border: 2px dashed #e9d5ff;
+      text-align: center; font-size: 0.88rem; color: #8d6e63; font-style: italic;
+      padding: 30px 10px; background: white; border-radius: 16px; border: 2px dashed #fff9c4;
     }
-    .page-footer { text-align: center; font-size: 0.7rem; color: #9a8c98; padding: 20px 0; }
+    .page-footer { text-align: center; font-size: 0.7rem; color: #8d6e63; padding: 20px 0; }
   </style>
 </head>
 <body>
 
 <div class="header">
   <a class="back-link" href="index.html">&#8592; Home</a>
-  <span class="icons">📊</span>
+  <span class="icons">📊️</span>
   <h1>Sondaggi Condominiali</h1>
   <div class="subtitle">Esprimi la tua opinione o proponi un quesito</div>
   <div class="sync-status">
@@ -203,7 +212,7 @@
 
 <div class="wave-divider">
   <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#f4f9fc"/>
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#fffef2"/>
   </svg>
 </div>
 
@@ -249,7 +258,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-  // Usa lo stesso database della lista spesa / piscina
   firebase.initializeApp({
     apiKey:            "AIzaSyAfOMeAkXUIandLUhCR8nfyELOPVRyD3WU",
     authDomain:        "lista-spesa-b9eb1.firebaseapp.com",
@@ -265,7 +273,6 @@
   let pollsData = {};
   const nameInput = document.getElementById('user-name');
 
-  // Gestione e normalizzazione Nome Utente
   nameInput.value = localStorage.getItem('piscinaName') || '';
   function cleanString(str) { return str.trim().replace(/\s+/g, ' '); }
   function myName() { return cleanString(nameInput.value); }
@@ -281,7 +288,6 @@
     render();
   });
 
-  // Gestione dinamica aggiunta campi opzione nel setup di creazione
   const optSetupList = document.getElementById('opzioni-setup-list');
   document.getElementById('add-opt-field-btn').addEventListener('click', () => {
     const count = optSetupList.children.length + 1;
@@ -294,7 +300,6 @@
     optSetupList.appendChild(row);
   });
 
-  // Creazione e pubblicazione del sondaggio su Firebase
   document.getElementById('create-poll-btn').addEventListener('click', () => {
     if (!myName()) { nameInput.focus(); showToast('⚠️ Inserisci prima il tuo nome!'); return; }
     
@@ -313,7 +318,6 @@
     const isMulti = document.getElementById('poll-multi').checked;
     const nuovoSondaggioRef = sondaggiRef.push();
 
-    // Imposta le informazioni base
     nuovoSondaggioRef.child('info').set({
       titolo: titolo,
       autore: myName(),
@@ -321,14 +325,12 @@
       multipla: isMulti
     });
 
-    // Salva le opzioni in una struttura pulita sotto il sondaggio
     opzioniArray.forEach((optText, index) => {
       nuovoSondaggioRef.child('opzioni').child('opt_' + index).set({
         testo: optText
       });
     });
 
-    // Reset Form
     document.getElementById('poll-title').value = '';
     optSetupList.innerHTML = `
       <div class="opzione-input-row"><input class="input-text opt-field" type="text" placeholder="Opzione 1" maxlength="50"/></div>
@@ -338,7 +340,6 @@
     showToast('📊 Sondaggio pubblicato!');
   });
 
-  // Sincronizzazione Firebase e Stato Connessione
   db.ref('.info/connected').on('value', snap => {
     const dot = document.getElementById('sync-dot');
     const lbl = document.getElementById('sync-label');
@@ -355,7 +356,6 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  // Rendering dinamico dei sondaggi e gestione votazioni
   function render() {
     const container = document.getElementById('polls-container');
     container.innerHTML = '';
@@ -366,14 +366,12 @@
       return;
     }
 
-    // Mostra l'ultimo creato in alto
     sondaggiIDs.reverse().forEach(pollId => {
       const poll = pollsData[pollId];
       const info = poll.info || {};
       const opzioniNode = poll.opzioni || {};
       const opzioniEntries = Object.entries(opzioniNode);
 
-      // Calcola i voti complessivi del sondaggio
       let totaleVotiSondaggio = 0;
       opzioniEntries.forEach(([, opt]) => {
         if(opt.voti) totaleVotiSondaggio += Object.keys(opt.voti).length;
@@ -382,7 +380,6 @@
       const card = document.createElement('div');
       card.className = 'sondaggio-card';
 
-      // Bottone per eliminare (visibile solo a chi ha creato il sondaggio)
       const visualizzaElimina = myNameLc() && myNameLc() === info.autoreKey 
         ? `<button class="del-sondaggio-btn" data-poll="${pollId}" title="Elimina sondaggio">🗑️</button>` 
         : '';
@@ -393,27 +390,22 @@
         const votantiEntries = Object.entries(votantiMap);
         const numeroVotiOpzione = votantiEntries.length;
         
-        // Verifica se l'utente corrente ha votato questa specifica opzione
         const hoVotatoQuesta = myNameLc() && !!votantiMap[myNameLc()];
-        
-        // Calcolo percentuale barra
         const percentuale = totaleVotiSondaggio > 0 ? Math.round((numeroVotiOpzione / totaleVotiSondaggio) * 100) : 0;
-        
-        // Costruzione lista nomi di chi ha votato l'opzione
         const stringaNomiVotanti = votantiEntries.map(([, nome]) => `<span class="voto-chip">${esc(nome)}</span>`).join(' ');
 
-       opzioniHtml += `
-  <div class="voto-opzione" data-poll="${pollId}" data-option="${optId}">
-    <div class="progress-bar-bg ${hoVotatoQuesta ? 'voto-selezionato' : ''}">
-      <div class="progress-bar-fill" style="width: ${percentuale}%;"></div>
-      <div class="voto-meta" style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box; ${hoVotatoQuesta ? 'color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.4);' : ''}">
-        <span style="text-align: left; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(opt.testo)}</span>
-        <span style="text-align: right; flex-shrink: 0; margin-left: auto; font-weight: 700;">${numeroVotiOpzione} 👤 (${percentuale}%)</span>
-      </div>
-    </div>
-    <div class="voti-nomi">${stringaNomiVotanti}</div>
-  </div>
-`;
+        opzioniHtml += `
+          <div class="voto-opzione" data-poll="${pollId}" data-option="${optId}">
+            <div class="progress-bar-bg ${hoVotatoQuesta ? 'voto-selezionato' : ''}">
+              <div class="progress-bar-fill" style="width: ${percentuale}%;"></div>
+              <div class="voto-meta" style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box; ${hoVotatoQuesta ? 'color: #3e2723; text-shadow: 0 1px 2px rgba(255,255,255,0.8); font-weight:700;' : ''}">
+                <span style="text-align: left; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(opt.testo)}</span>
+                <span style="text-align: right; flex-shrink: 0; margin-left: auto;">${numeroVotiOpzione} 👤 (${percentuale}%)</span>
+              </div>
+            </div>
+            <div class="voti-nomi">${stringaNomiVotanti}</div>
+          </div>
+        `;
       });
 
       card.innerHTML = `
@@ -433,16 +425,12 @@
       container.appendChild(card);
     });
 
-    // Aggancia gestori eventi per i voti
     document.querySelectorAll('.voto-opzione').forEach(element => {
       element.addEventListener('click', () => {
-        const pId = element.dataset.poll;
-        const oId = element.dataset.option;
-        handleVoto(pId, oId);
+        handleVoto(element.dataset.poll, element.dataset.option);
       });
     });
 
-    // Aggancia gestori eventi per l'eliminazione
     document.querySelectorAll('.del-sondaggio-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -454,7 +442,6 @@
     });
   }
 
-  // Logica di votazione (Singola o Multipla) strutturata in Chiave-Valore
   function handleVoto(pollId, optId) {
     if (!myName()) { nameInput.focus(); showToast('⚠️ Inserisci prima il tuo nome!'); return; }
     
@@ -463,15 +450,12 @@
     const info = poll.info || {};
     const opzioni = poll.opzioni || {};
     
-    // Controlla se l'utente ha già votato questa specifica opzione
     const giaVotatoQuesta = opzioni[optId].voti && !!opzioni[optId].voti[userKey];
 
     if (giaVotatoQuesta) {
-      // Se clicca su un'opzione già votata, rimuove il voto (annullamento)
       sondaggiRef.child(pollId).child('opzioni').child(optId).child('voti').child(userKey).remove();
       showToast('❌ Voto rimosso');
     } else {
-      // Se è a SCELTA SINGOLA, dobbiamo prima cancellare eventuali altri voti dell'utente in questo sondaggio
       if (!info.multipla) {
         Object.keys(opzioni).forEach(oKey => {
           if (opzioni[oKey].voti && opzioni[oKey].voti[userKey]) {
@@ -479,8 +463,6 @@
           }
         });
       }
-      
-      // Assegna il voto all'opzione selezionata usando la userKey fissa
       sondaggiRef.child(pollId).child('opzioni').child(optId).child('voti').child(userKey).set(myName());
       showToast('✅ Voto registrato!');
     }
