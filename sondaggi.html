@@ -402,13 +402,13 @@
         // Costruzione lista nomi di chi ha votato l'opzione
         const stringaNomiVotanti = votantiEntries.map(([, nome]) => `<span class="voto-chip">${esc(nome)}</span>`).join(' ');
 
-        opzioniHtml += `
+       opzioniHtml += `
   <div class="voto-opzione" data-poll="${pollId}" data-option="${optId}">
     <div class="progress-bar-bg ${hoVotatoQuesta ? 'voto-selezionato' : ''}">
       <div class="progress-bar-fill" style="width: ${percentuale}%;"></div>
-      <div class="voto-meta" style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box;">
+      <div class="voto-meta" style="display: flex; justify-content: space-between; width: 100%; box-sizing: border-box; ${hoVotatoQuesta ? 'color: white; text-shadow: 0 1px 4px rgba(0,0,0,0.4);' : ''}">
         <span style="text-align: left; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${esc(opt.testo)}</span>
-        <span style="text-align: right; flex-shrink: 0; margin-left: auto;">${numeroVotiOpzione} 👤 (${percentuale}%)</span>
+        <span style="text-align: right; flex-shrink: 0; margin-left: auto; font-weight: 700;">${numeroVotiOpzione} 👤 (${percentuale}%)</span>
       </div>
     </div>
     <div class="voti-nomi">${stringaNomiVotanti}</div>
