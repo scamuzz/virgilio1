@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>📊 Sondaggi Condominiali</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f9fc;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #4a4e69 0%, #7209b7 65%, #b5179e 100%);
+      color: white;
+      padding: 36px 20px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.12), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.08), transparent);
+    }
+
+    .back-link {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,0.18); border-radius: 20px;
+      padding: 7px 15px; font-size: 0.76rem; font-weight: 700;
+      color: white; text-decoration: none; z-index: 2;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.30); }
+
+    .header .icons { font-size: 3.2rem; display: block; margin-bottom: 10px; line-height: 1; position: relative; }
+    .header h1 {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2); position: relative;
+    }
+    .header .subtitle {
+      font-size: 0.82rem; opacity: 0.9; margin-top: 6px;
+      font-weight: 500; letter-spacing: 0.3px; position: relative;
+    }
+
+    .sync-status {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-size: 0.7rem; margin-top: 12px; opacity: 0.92; position: relative;
+    }
+    .sync-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #fff; animation: blink 1.5s infinite; flex-shrink: 0;
+    }
+    .sync-dot.connected { background: #a5d6a7; animation: none; }
+    .sync-dot.error     { background: #ef9a9a; animation: none; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #4a4e69 0%, #7209b7 65%, #b5179e 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 16px 12px 60px; }
+
+    /* ── CARD COMUNI ── */
+    .card {
+      background: white; border-radius: 18px; padding: 16px 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 22px rgba(114, 9, 183, 0.05);
+      border: 2px solid #f3e8ff;
+    }
+    .card h3 {
+      font-size: 0.76rem; color: #7209b7;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      font-weight: 800; margin-bottom: 10px;
+    }
+
+    .input-text {
+      width: 100%; border: 2px solid #e9d5ff; border-radius: 10px;
+      padding: 11px 14px; font-size: 0.92rem; outline: none;
+      color: #333; transition: border-color 0.2s; font-family: inherit;
+      background: #fdfbff;
+    }
+    .input-text:focus { border-color: #7209b7; background: #fff; }
+
+    /* ── CREAZIONE SONDAGGIO ── */
+    .crea-btn {
+      width: 100%; background: linear-gradient(135deg, #7209b7, #b5179e);
+      color: white; border: none; border-radius: 10px;
+      padding: 12px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(114,9,183,0.2);
+      transition: all 0.2s;
+    }
+    .crea-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .opzioni-setup { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+    .opzione-input-row { display: flex; gap: 6px; }
+    .remove-opt-btn {
+      background: #ffebee; color: #c62828; border: 1px solid #ef9a9a;
+      border-radius: 10px; padding: 0 12px; cursor: pointer; font-weight: bold;
+    }
+
+    .toggle-container {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 10px; font-size: 0.82rem; color: #4a4e69; font-weight: 600;
+    }
+    .toggle-container input { width: 16px; height: 16px; cursor: pointer; }
+
+    /* ── LISTA SONDAGGI ── */
+    .section-title {
+      font-size: 0.78rem; font-weight: 800; color: #4a4e69;
+      text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 12px 2px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-title::after {
+      content: ''; flex: 1; height: 2px;
+      background: linear-gradient(90deg, #e9d5ff 0%, transparent 100%);
+    }
+
+    .sondaggio-card {
+      background: white; border-radius: 16px; padding: 16px; margin-bottom: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.03); border: 2px solid #f3e8ff;
+    }
+    .sondaggio-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .sondaggio-titolo { font-size: 1rem; font-weight: 700; color: #240046; margin-bottom: 2px; }
+    .sondaggio-autore { font-size: 0.68rem; color: #9a8c98; }
+    .badge-tipo { font-size: 0.58rem; background: #f3e8ff; color: #7209b7; padding: 2px 6px; border-radius: 8px; font-weight: 700; }
+
+    /* OPZIONI DI VOTO */
+    .voto-opzione {
+      margin-bottom: 10px; position: relative; cursor: pointer;
+    }
+    .voto-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 4px; font-size: 0.82rem; font-weight: 600; color: #4a4e69;
+      position: relative; z-index: 2; padding: 0 8px;
+    }
+    .progress-bar-bg {
+      width: 100%; height: 34px; background: #f7f4fa; border: 1.5px solid #e9d5ff;
+      border-radius: 8px; overflow: hidden; position: relative; display: flex; align-items: center;
+      transition: all 0.2s;
+    }
+    .progress-bar-fill {
+      height: 100%; background: linear-gradient(90deg, #e0aaff, #c77dff);
+      width: 0%; transition: width 0.4s ease-out; position: absolute; left: 0; top: 0;
+    }
+    .progress-bar-bg.voto-selezionato {
+      border-color: #7209b7; background: #faf5ff;
+    }
+    .progress-bar-bg.voto-selezionato .progress-bar-fill {
+      background: linear-gradient(90deg, #b5179e, #7209b7);
+    }
+
+    .voti-nomi {
+      font-size: 0.68rem; color: #7209b7; margin-top: 3px; padding: 0 8px;
+      display: flex; flex-wrap: wrap; gap: 4px;
+    }
+    .voto-chip { background: #f3e8ff; padding: 1px 6px; border-radius: 6px; }
+
+    .del-sondaggio-btn {
+      background: none; border: none; color: #ef9a9a; cursor: pointer; font-size: 0.85rem; padding: 2px;
+      transition: color 0.2s;
+    }
+    .del-sondaggio-btn:hover { color: #c62828; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #240046; color: white; padding: 10px 22px; border-radius: 24px;
+      font-size: 0.83rem; font-weight: 600; transition: transform 0.3s ease; z-index: 999;
+      box-shadow: 0 6px 24px rgba(36,0,70,0.4); white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .no-results {
+      text-align: center; font-size: 0.88rem; color: #9a8c98; font-style: italic;
+      padding: 30px 10px; background: white; border-radius: 16px; border: 2px dashed #e9d5ff;
+    }
+    .page-footer { text-align: center; font-size: 0.7rem; color: #9a8c98; padding: 20px 0; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <span class="icons">📊 📝 🗳️</span>
+  <h1>Sondaggi Condominiali</h1>
+  <div class="subtitle">Esprimi la tua opinione o proponi un quesito</div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Connessione in corso…</span>
+  </div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#f4f9fc"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>👤 Il tuo nome</h3>
+    <input class="input-text" type="text" id="user-name" placeholder="Es. Marco, Giulia…" maxlength="30" autocomplete="off" spellcheck="false"/>
+  </div>
+
+  <div class="card">
+    <h3>🆕 Crea un nuovo sondaggio</h3>
+    <input class="input-text" type="text" id="poll-title" placeholder="Qual è la tua domanda?" maxlength="100" style="margin-bottom: 10px; font-weight:600;"/>
+    
+    <div class="opzioni-setup" id="opzioni-setup-list">
+      <div class="opzione-input-row">
+        <input class="input-text opt-field" type="text" placeholder="Opzione 1" maxlength="50"/>
+      </div>
+      <div class="opzione-input-row">
+        <input class="input-text opt-field" type="text" placeholder="Opzione 2" maxlength="50"/>
+      </div>
+    </div>
+
+    <button class="filter-btn" id="add-opt-field-btn" style="border-style: dashed; padding: 6px; font-size: 0.75rem;">➕ Aggiungi Opzione</button>
+
+    <div class="toggle-container">
+      <input type="checkbox" id="poll-multi"/>
+      <label Skinner for="poll-multi">Consenti scelta multipla (più opzioni votabili)</label>
+    </div>
+
+    <button class="crea-btn" id="create-poll-btn">Pubblica Sondaggio</button>
+  </div>
+
+  <div class="section-title">🗳️ Sondaggi Attivi</div>
+  <div id="polls-container"></div>
+
+</div>
+
+<div class="page-footer">📊 Aggiornato in tempo reale • Gestione Condominio</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  // Usa lo stesso database della lista spesa / piscina
+  firebase.initializeApp({
+    apiKey:            "AIzaSyAfOMeAkXUIandLUhCR8nfyELOPVRyD3WU",
+    authDomain:        "lista-spesa-b9eb1.firebaseapp.com",
+    databaseURL:       "https://lista-spesa-b9eb1-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "lista-spesa-b9eb1",
+    storageBucket:     "lista-spesa-b9eb1.firebasestorage.app",
+    messagingSenderId: "468690890938",
+    appId:             "1:468690890938:web:048be7f27779d8862d9283"
+  });
+  const db = firebase.database();
+  const sondaggiRef = db.ref('sondaggi');
+
+  let pollsData = {};
+  const nameInput = document.getElementById('user-name');
+
+  // Gestione e normalizzazione Nome Utente
+  nameInput.value = localStorage.getItem('piscinaName') || '';
+  function cleanString(str) { return str.trim().replace(/\s+/g, ' '); }
+  function myName() { return cleanString(nameInput.value); }
+  function myNameLc() { return myName().toLowerCase().replace(/[^a-z0-9]/g, '_'); }
+
+  nameInput.addEventListener('input', () => {
+    localStorage.setItem('piscinaName', cleanString(nameInput.value));
+    render();
+  });
+  nameInput.addEventListener('blur', () => {
+    nameInput.value = cleanString(nameInput.value);
+    localStorage.setItem('piscinaName', nameInput.value);
+    render();
+  });
+
+  // Gestione dinamica aggiunta campi opzione nel setup di creazione
+  const optSetupList = document.getElementById('opzioni-setup-list');
+  document.getElementById('add-opt-field-btn').addEventListener('click', () => {
+    const count = optSetupList.children.length + 1;
+    if(count > 6) { showToast("⚠️ Massimo 6 opzioni!"); return; }
+    const row = document.createElement('div');
+    row.className = 'opzione-input-row';
+    row.innerHTML = `<input class="input-text opt-field" type="text" placeholder="Opzione ${count}" maxlength="50"/>
+                     <button class="remove-opt-btn">✕</button>`;
+    row.querySelector('.remove-opt-btn').addEventListener('click', () => row.remove());
+    optSetupList.appendChild(row);
+  });
+
+  // Creazione e pubblicazione del sondaggio su Firebase
+  document.getElementById('create-poll-btn').addEventListener('click', () => {
+    if (!myName()) { nameInput.focus(); showToast('⚠️ Inserisci prima il tuo nome!'); return; }
+    
+    const titolo = cleanString(document.getElementById('poll-title').value);
+    if (!titolo) { showToast('⚠️ Inserisci una domanda per il sondaggio!'); return; }
+
+    const fields = document.querySelectorAll('.opt-field');
+    let opzioniArray = [];
+    fields.forEach(f => {
+      const val = cleanString(f.value);
+      if(val) opzioniArray.push(val);
+    });
+
+    if (opzioniArray.length < 2) { showToast('⚠️ Inserisci almeno 2 opzioni valide!'); return; }
+
+    const isMulti = document.getElementById('poll-multi').checked;
+    const nuovoSondaggioRef = sondaggiRef.push();
+
+    // Imposta le informazioni base
+    nuovoSondaggioRef.child('info').set({
+      titolo: titolo,
+      autore: myName(),
+      autoreKey: myNameLc(),
+      multipla: isMulti
+    });
+
+    // Salva le opzioni in una struttura pulita sotto il sondaggio
+    opzioniArray.forEach((optText, index) => {
+      nuovoSondaggioRef.child('opzioni').child('opt_' + index).set({
+        testo: optText
+      });
+    });
+
+    // Reset Form
+    document.getElementById('poll-title').value = '';
+    optSetupList.innerHTML = `
+      <div class="opzione-input-row"><input class="input-text opt-field" type="text" placeholder="Opzione 1" maxlength="50"/></div>
+      <div class="opzione-input-row"><input class="input-text opt-field" type="text" placeholder="Opzione 2" maxlength="50"/></div>
+    `;
+    document.getElementById('poll-multi').checked = false;
+    showToast('📊 Sondaggio pubblicato!');
+  });
+
+  // Sincronizzazione Firebase e Stato Connessione
+  db.ref('.info/connected').on('value', snap => {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    if (snap.val()) { dot.className = 'sync-dot connected'; lbl.textContent = '🟢 Sincronizzato in tempo reale'; }
+    else { dot.className = 'sync-dot error'; lbl.textContent = '🔴 Offline — riconnessione…'; }
+  });
+
+  sondaggiRef.on('value', snap => {
+    pollsData = snap.val() || {};
+    render();
+  });
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Rendering dinamico dei sondaggi e gestione votazioni
+  function render() {
+    const container = document.getElementById('polls-container');
+    container.innerHTML = '';
+
+    const sondaggiIDs = Object.keys(pollsData);
+    if(sondaggiIDs.length === 0) {
+      container.innerHTML = '<div class="no-results">Nessun sondaggio attivo al momento. Creane uno tu! 📝</div>';
+      return;
+    }
+
+    // Mostra l'ultimo creato in alto
+    sondaggiIDs.reverse().forEach(pollId => {
+      const poll = pollsData[pollId];
+      const info = poll.info || {};
+      const opzioniNode = poll.opzioni || {};
+      const opzioniEntries = Object.entries(opzioniNode);
+
+      // Calcola i voti complessivi del sondaggio
+      let totaleVotiSondaggio = 0;
+      opzioniEntries.forEach(([, opt]) => {
+        if(opt.voti) totaleVotiSondaggio += Object.keys(opt.voti).length;
+      });
+
+      const card = document.createElement('div');
+      card.className = 'sondaggio-card';
+
+      // Bottone per eliminare (visibile solo a chi ha creato il sondaggio)
+      const visualizzaElimina = myNameLc() && myNameLc() === info.autoreKey 
+        ? `<button class="del-sondaggio-btn" data-poll="${pollId}" title="Elimina sondaggio">🗑️</button>` 
+        : '';
+
+      let opzioniHtml = '';
+      opzioniEntries.forEach(([optId, opt]) => {
+        const votantiMap = opt.voti || {};
+        const votantiEntries = Object.entries(votantiMap);
+        const numeroVotiOpzione = votantiEntries.length;
+        
+        // Verifica se l'utente corrente ha votato questa specifica opzione
+        const hoVotatoQuesta = myNameLc() && !!votantiMap[myNameLc()];
+        
+        // Calcolo percentuale barra
+        const percentuale = totaleVotiSondaggio > 0 ? Math.round((numeroVotiOpzione / totaleVotiSondaggio) * 100) : 0;
+        
+        // Costruzione lista nomi di chi ha votato l'opzione
+        const stringaNomiVotanti = votantiEntries.map(([, nome]) => `<span class="voto-chip">${esc(nome)}</span>`).join(' ');
+
+        opzioniHtml += `
+          <div class="voto-opzione" data-poll="${pollId}" data-option="${optId}">
+            <div class="progress-bar-bg ${hoVotatoQuesta ? 'voto-selezionato' : ''}">
+              <div class="progress-bar-fill" style="width: ${percentuale}%;"></div>
+              <div class="voto-meta">
+                <span>${esc(opt.testo)}</span>
+                <span>${numeroVotiOpzione} 👤 (${percentuale}%)</span>
+              </div>
+            </div>
+            <div class="voti-nomi">${stringaNomiVotanti}</div>
+          </div>
+        `;
+      });
+
+      card.innerHTML = `
+        <div class="sondaggio-header">
+          <div>
+            <div class="sondaggio-titolo">${esc(info.titolo)}</div>
+            <div class="sondaggio-autore">Proposto da: <strong>${esc(info.autore)}</strong></div>
+          </div>
+          <div style="text-align: right; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+            <span class="badge-tipo">${info.multipla ? '🗂️ Scelta Multipla' : '👆 Scelta Singola'}</span>
+            ${visualizzaElimina}
+          </div>
+        </div>
+        <div style="margin-top:10px;">${opzioniHtml}</div>
+      `;
+
+      container.appendChild(card);
+    });
+
+    // Aggancia gestori eventi per i voti
+    document.querySelectorAll('.voto-opzione').forEach(element => {
+      element.addEventListener('click', () => {
+        const pId = element.dataset.poll;
+        const oId = element.dataset.option;
+        handleVoto(pId, oId);
+      });
+    });
+
+    // Aggancia gestori eventi per l'eliminazione
+    document.querySelectorAll('.del-sondaggio-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(confirm("Vuoi davvero eliminare questo sondaggio?")) {
+          sondaggiRef.child(btn.dataset.poll).remove();
+          showToast("🗑️ Sondaggio rimosso");
+        }
+      });
+    });
+  }
+
+  // Logica di votazione (Singola o Multipla) strutturata in Chiave-Valore
+  function handleVoto(pollId, optId) {
+    if (!myName()) { nameInput.focus(); showToast('⚠️ Inserisci prima il tuo nome!'); return; }
+    
+    const userKey = myNameLc();
+    const poll = pollsData[pollId];
+    const info = poll.info || {};
+    const opzioni = poll.opzioni || {};
+    
+    // Controlla se l'utente ha già votato questa specifica opzione
+    const giaVotatoQuesta = opzioni[optId].voti && !!opzioni[optId].voti[userKey];
+
+    if (giaVotatoQuesta) {
+      // Se clicca su un'opzione già votata, rimuove il voto (annullamento)
+      sondaggiRef.child(pollId).child('opzioni').child(optId).child('voti').child(userKey).remove();
+      showToast('❌ Voto rimosso');
+    } else {
+      // Se è a SCELTA SINGOLA, dobbiamo prima cancellare eventuali altri voti dell'utente in questo sondaggio
+      if (!info.multipla) {
+        Object.keys(opzioni).forEach(oKey => {
+          if (opzioni[oKey].voti && opzioni[oKey].voti[userKey]) {
+            sondaggiRef.child(pollId).child('opzioni').child(oKey).child('voti').child(userKey).remove();
+          }
+        });
+      }
+      
+      // Assegna il voto all'opzione selezionata usando la userKey fissa
+      sondaggiRef.child(pollId).child('opzioni').child(optId).child('voti').child(userKey).set(myName());
+      showToast('✅ Voto registrato!');
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
