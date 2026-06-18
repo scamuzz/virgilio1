@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>💰 Cassa Comune — Virgilio 1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0faf4;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #1b5e20 0%, #2e7d32 55%, #43a047 100%);
+      color: white;
+      padding: 36px 20px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(255,255,255,0.10), transparent),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(255,255,255,0.07), transparent);
+    }
+
+    .back-link {
+      position: absolute; top: 14px; left: 14px;
+      background: rgba(255,255,255,0.18); border-radius: 20px;
+      padding: 7px 15px; font-size: 0.76rem; font-weight: 700;
+      color: white; text-decoration: none; z-index: 2;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { background: rgba(255,255,255,0.30); }
+
+    .header .icons { font-size: 3rem; display: block; margin-bottom: 10px; line-height: 1; position: relative; }
+    .header h1 {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2); position: relative;
+    }
+    .header .subtitle {
+      font-size: 0.82rem; opacity: 0.9; margin-top: 6px;
+      font-weight: 500; letter-spacing: 0.3px; position: relative;
+    }
+
+    .sync-status {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-size: 0.7rem; margin-top: 12px; opacity: 0.92; position: relative;
+    }
+    .sync-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #fff; animation: blink 1.5s infinite; flex-shrink: 0;
+    }
+    .sync-dot.connected { background: #a5d6a7; animation: none; }
+    .sync-dot.error     { background: #ef9a9a; animation: none; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #1b5e20 0%, #2e7d32 55%, #43a047 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 520px; margin: 0 auto; padding: 16px 12px 60px; }
+
+    /* ── SALDO CARD ── */
+    .saldo-card {
+      background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 60%, #43a047 100%);
+      border-radius: 20px; padding: 20px 18px 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 6px 28px rgba(27,94,32,0.28);
+      color: white;
+    }
+    .saldo-label {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.2px; opacity: 0.82; margin-bottom: 4px;
+    }
+    .saldo-amount {
+      font-size: 2.2rem; font-weight: 900; letter-spacing: 0.5px;
+      line-height: 1.1; margin-bottom: 14px;
+    }
+    .saldo-amount.negativo { color: #ffcdd2; }
+    .saldo-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .saldo-box {
+      background: rgba(255,255,255,0.13); border-radius: 12px;
+      padding: 10px 12px;
+      backdrop-filter: blur(4px);
+    }
+    .saldo-box-label {
+      font-size: 0.65rem; font-weight: 700; opacity: 0.8;
+      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px;
+    }
+    .saldo-box-amount {
+      font-size: 1.1rem; font-weight: 800;
+    }
+    .entrate-color { color: #b9f6ca; }
+    .uscite-color  { color: #ffcdd2; }
+
+    /* ── TABS ── */
+    .tabs {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px; margin-bottom: 16px;
+    }
+    .tab-btn {
+      border: 2px solid #a5d6a7; border-radius: 14px;
+      padding: 11px 10px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: white; color: #2e7d32; text-align: center;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: white; border-color: transparent;
+      box-shadow: 0 3px 14px rgba(46,125,50,0.30);
+    }
+
+    /* ── FORM ── */
+    .entry-form {
+      background: white; border-radius: 18px; padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 22px rgba(46,125,50,0.10);
+      border: 2px solid #c8e6c9;
+    }
+    .entry-form h3 {
+      font-size: 0.76rem; color: #2e7d32;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      font-weight: 800; margin-bottom: 12px;
+    }
+
+    .form-group { margin-bottom: 10px; }
+    .form-label { font-size: 0.72rem; font-weight: 700; color: #4a4a4a; margin-bottom: 4px; display: block; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%; border: 2px solid #c8e6c9; border-radius: 10px;
+      padding: 10px 13px; font-size: 0.88rem; outline: none;
+      color: #333; transition: border-color 0.2s; font-family: inherit;
+      background: #f9fef9; appearance: none;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: #2e7d32; background: #fff;
+    }
+    .form-textarea { min-height: 72px; resize: vertical; }
+    .name-hint { font-size: 0.71rem; color: #90a4ae; margin-top: 5px; line-height: 1.5; }
+
+    .submit-btn {
+      width: 100%; border: none; border-radius: 10px;
+      padding: 11px 14px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: white;
+      box-shadow: 0 3px 12px rgba(46,125,50,0.25);
+      margin-top: 4px;
+    }
+    .submit-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.76rem; font-weight: 800; color: #2e7d32;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin: 4px 0 10px 2px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 2px;
+      background: linear-gradient(90deg, #c8e6c9 0%, transparent 100%);
+      border-radius: 2px;
+    }
+
+    /* ── ENTRY CARD ── */
+    .entry-card {
+      background: white; border-radius: 16px;
+      padding: 13px 15px; margin-bottom: 9px;
+      box-shadow: 0 2px 12px rgba(46,125,50,0.07);
+      border: 2px solid #e8f5e9;
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .entry-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,125,50,0.12); }
+    .entry-card.versamento { border-left: 4px solid #43a047; }
+    .entry-card.spesa      { border-left: 4px solid #e53935; }
+
+    .entry-info { flex: 1; min-width: 0; }
+    .entry-title {
+      font-size: 0.88rem; font-weight: 700; color: #1a1a1a;
+      margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .entry-sub {
+      font-size: 0.70rem; color: #78909c; line-height: 1.5;
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    }
+    .entry-tag {
+      font-size: 0.60rem; font-weight: 700; padding: 2px 7px;
+      border-radius: 8px;
+    }
+    .tag-tipo { background: #e8f5e9; color: #2e7d32; }
+
+    .entry-right {
+      display: flex; flex-direction: column;
+      align-items: flex-end; gap: 6px; flex-shrink: 0;
+    }
+    .entry-amount {
+      font-size: 1.05rem; font-weight: 800; white-space: nowrap;
+    }
+    .amount-verde { color: #2e7d32; }
+    .amount-rosso { color: #c62828; }
+
+    .delete-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.78rem; color: #ef9a9a; padding: 2px 6px;
+      border-radius: 8px; transition: background 0.2s, color 0.2s;
+    }
+    .delete-btn:hover { background: #ffebee; color: #c62828; }
+
+    .empty-state {
+      text-align: center; padding: 36px 16px;
+      color: #bcaaa4; font-size: 0.82rem; line-height: 1.8;
+    }
+    .empty-state .emoji { font-size: 2.6rem; display: block; margin-bottom: 10px; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1b5e20; color: white;
+      padding: 10px 22px; border-radius: 24px;
+      font-size: 0.83rem; font-weight: 600;
+      transition: transform 0.3s ease; z-index: 999;
+      white-space: nowrap; max-width: calc(100vw - 32px);
+      box-shadow: 0 6px 24px rgba(27,94,32,0.4);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .page-footer {
+      text-align: center; font-size: 0.7rem; color: #bcaaa4;
+      padding: 6px 0 20px; letter-spacing: 0.3px;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back-link" href="index.html">&#8592; Home</a>
+  <span class="icons">💰</span>
+  <h1>Cassa Comune</h1>
+  <div class="subtitle">Versamenti dei condomini e spese condominiali</div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-label">Connessione in corso…</span>
+  </div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#f0faf4"/>
+    <path d="M0,50 C220,18 440,66 660,46 C880,26 1100,62 1320,44 L1440,50 L1440,72 L0,72 Z" fill="#f0faf4" opacity="0.55"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <!-- Saldo -->
+  <div class="saldo-card">
+    <div class="saldo-label">🏦 Saldo cassa</div>
+    <div class="saldo-amount" id="saldo-display">€ 0,00</div>
+    <div class="saldo-row">
+      <div class="saldo-box">
+        <div class="saldo-box-label">↑ Entrate</div>
+        <div class="saldo-box-amount entrate-color" id="entrate-display">€ 0,00</div>
+      </div>
+      <div class="saldo-box">
+        <div class="saldo-box-label">↓ Uscite</div>
+        <div class="saldo-box-amount uscite-color" id="uscite-display">€ 0,00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab buttons -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="versamenti">💳 Versamenti</button>
+    <button class="tab-btn" data-tab="spese">🧾 Spese</button>
+  </div>
+
+  <!-- TAB: VERSAMENTI -->
+  <div class="tab-panel active" id="panel-versamenti">
+    <div class="entry-form">
+      <h3>💳 Nuovo versamento</h3>
+      <div class="form-group">
+        <label class="form-label">👤 Condomino</label>
+        <input class="form-input" type="text" id="v-nome"
+               placeholder="Es. Appartamento 3, Marco R.…" maxlength="50"
+               autocomplete="off" spellcheck="false"/>
+        <div class="name-hint">Il nome viene ricordato automaticamente.</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">💶 Importo (€)</label>
+          <input class="form-input" type="number" id="v-importo"
+                 placeholder="0,00" min="0.01" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📅 Data</label>
+          <input class="form-input" type="date" id="v-data"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">📝 Note <span style="color:#bcaaa4;font-weight:400">(opzionale)</span></label>
+        <input class="form-input" type="text" id="v-note"
+               placeholder="Es. Quota mensile, Straordinaria…" maxlength="100" autocomplete="off"/>
+      </div>
+      <button class="submit-btn" id="v-submit">💳 Aggiungi versamento</button>
+    </div>
+
+    <div class="section-label" id="v-list-label">📋 Versamenti</div>
+    <div id="versamenti-container"></div>
+  </div>
+
+  <!-- TAB: SPESE -->
+  <div class="tab-panel" id="panel-spese">
+    <div class="entry-form">
+      <h3>🧾 Nuova spesa</h3>
+      <div class="form-group">
+        <label class="form-label">🏷️ Tipologia</label>
+        <select class="form-select" id="s-tipo">
+          <option value="">— Seleziona tipologia —</option>
+          <option>🔧 Manutenzione ordinaria</option>
+          <option>🏗️ Manutenzione straordinaria</option>
+          <option>🧹 Pulizie</option>
+          <option>🏊 Piscina</option>
+          <option>🌿 Giardinaggio</option>
+          <option>📋 Amministrazione</option>
+          <option>🛡️ Assicurazione</option>
+          <option>💡 Utenze (luce, acqua, gas)</option>
+          <option>🛗 Ascensore</option>
+          <option>🚪 Portone / Cancello</option>
+          <option>📦 Materiali e forniture</option>
+          <option>📌 Altro</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">💶 Importo (€)</label>
+          <input class="form-input" type="number" id="s-importo"
+                 placeholder="0,00" min="0.01" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📅 Data</label>
+          <input class="form-input" type="date" id="s-data"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">📝 Descrizione <span style="color:#bcaaa4;font-weight:400">(opzionale)</span></label>
+        <input class="form-input" type="text" id="s-desc"
+               placeholder="Es. Fattura idraulico, Acquisto cloro…" maxlength="120" autocomplete="off"/>
+      </div>
+      <button class="submit-btn" id="s-submit">🧾 Aggiungi spesa</button>
+    </div>
+
+    <div class="section-label" id="s-list-label">📋 Spese</div>
+    <div id="spese-container"></div>
+  </div>
+
+</div>
+
+<div class="page-footer">💰 Cassa Comune • Virgilio 1</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+  firebase.initializeApp({
+    apiKey:            "AIzaSyAfOMeAkXUIandLUhCR8nfyELOPVRyD3WU",
+    authDomain:        "lista-spesa-b9eb1.firebaseapp.com",
+    databaseURL:       "https://lista-spesa-b9eb1-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:         "lista-spesa-b9eb1",
+    storageBucket:     "lista-spesa-b9eb1.firebasestorage.app",
+    messagingSenderId: "468690890938",
+    appId:             "1:468690890938:web:048be7f27779d8862d9283"
+  });
+  const db       = firebase.database();
+  const versRef  = db.ref('cassa/versamenti');
+  const speseRef = db.ref('cassa/spese');
+
+  let versData  = {};
+  let speseData = {};
+
+  /* ── TODAY ── */
+  function todayISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  /* ── INIT DATES ── */
+  document.getElementById('v-data').value = todayISO();
+  document.getElementById('s-data').value = todayISO();
+
+  /* ── NOME CONDOMINO ── */
+  const vNome = document.getElementById('v-nome');
+  vNome.value = localStorage.getItem('condoName') || '';
+  vNome.addEventListener('input', () =>
+    localStorage.setItem('condoName', vNome.value.trim())
+  );
+
+  /* ── SYNC STATUS ── */
+  db.ref('.info/connected').on('value', snap => {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    if (snap.val()) {
+      dot.className   = 'sync-dot connected';
+      lbl.textContent = '🟢 Sincronizzato in tempo reale';
+    } else {
+      dot.className   = 'sync-dot error';
+      lbl.textContent = '🔴 Offline — riconnessione…';
+    }
+  });
+
+  /* ── FIREBASE LISTENERS ── */
+  versRef.on('value', snap => {
+    versData = snap.val() || {};
+    renderVersamenti();
+    updateSaldo();
+  });
+  speseRef.on('value', snap => {
+    speseData = snap.val() || {};
+    renderSpese();
+    updateSaldo();
+  });
+
+  /* ── UTILS ── */
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fmtEuro(n) {
+    return '€\u00a0' + Number(n).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtDate(isoDate) {
+    if (!isoDate) return '';
+    const [y, m, d] = isoDate.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  /* ── SALDO ── */
+  function updateSaldo() {
+    const entrate = Object.values(versData).reduce((s, v) => s + Number(v.importo || 0), 0);
+    const uscite  = Object.values(speseData).reduce((s, v) => s + Number(v.importo || 0), 0);
+    const saldo   = entrate - uscite;
+
+    document.getElementById('entrate-display').textContent = fmtEuro(entrate);
+    document.getElementById('uscite-display').textContent  = fmtEuro(uscite);
+    const saldoEl = document.getElementById('saldo-display');
+    saldoEl.textContent = fmtEuro(saldo);
+    saldoEl.className   = 'saldo-amount' + (saldo < 0 ? ' negativo' : '');
+  }
+
+  /* ── RENDER VERSAMENTI ── */
+  function renderVersamenti() {
+    const container = document.getElementById('versamenti-container');
+    const entries   = Object.entries(versData).sort(([,a],[,b]) => b.ts - a.ts);
+
+    document.getElementById('v-list-label').textContent = `📋 Versamenti (${entries.length})`;
+
+    if (entries.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="emoji">💳</span>
+          Nessun versamento registrato.<br>Aggiungi il primo pagamento!
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = entries.map(([id, v]) => `
+      <div class="entry-card versamento">
+        <div class="entry-info">
+          <div class="entry-title">👤 ${esc(v.nome)}</div>
+          <div class="entry-sub">
+            <span>📅 ${fmtDate(v.data)}</span>
+            ${v.note ? `<span class="entry-tag tag-tipo">${esc(v.note)}</span>` : ''}
+          </div>
+        </div>
+        <div class="entry-right">
+          <span class="entry-amount amount-verde">+${fmtEuro(v.importo)}</span>
+          <button class="delete-btn" data-ref="versamenti" data-id="${id}" title="Elimina">🗑️</button>
+        </div>
+      </div>`
+    ).join('');
+
+    attachDeleteListeners(container);
+  }
+
+  /* ── RENDER SPESE ── */
+  function renderSpese() {
+    const container = document.getElementById('spese-container');
+    const entries   = Object.entries(speseData).sort(([,a],[,b]) => b.ts - a.ts);
+
+    document.getElementById('s-list-label').textContent = `📋 Spese (${entries.length})`;
+
+    if (entries.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="emoji">🧾</span>
+          Nessuna spesa registrata.<br>Aggiungi la prima uscita!
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = entries.map(([id, s]) => `
+      <div class="entry-card spesa">
+        <div class="entry-info">
+          <div class="entry-title">${esc(s.tipo)}</div>
+          <div class="entry-sub">
+            <span>📅 ${fmtDate(s.data)}</span>
+            ${s.desc ? `<span class="entry-tag tag-tipo">${esc(s.desc)}</span>` : ''}
+          </div>
+        </div>
+        <div class="entry-right">
+          <span class="entry-amount amount-rosso">-${fmtEuro(s.importo)}</span>
+          <button class="delete-btn" data-ref="spese" data-id="${id}" title="Elimina">🗑️</button>
+        </div>
+      </div>`
+    ).join('');
+
+    attachDeleteListeners(container);
+  }
+
+  function attachDeleteListeners(container) {
+    container.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (confirm('Eliminare questa voce?')) {
+          db.ref(`cassa/${btn.dataset.ref}/${btn.dataset.id}`).remove();
+          showToast('🗑️ Voce eliminata');
+        }
+      });
+    });
+  }
+
+  /* ── AGGIUNGI VERSAMENTO ── */
+  document.getElementById('v-submit').addEventListener('click', () => {
+    const nome    = vNome.value.trim();
+    const importo = parseFloat(document.getElementById('v-importo').value);
+    const data    = document.getElementById('v-data').value;
+    const note    = document.getElementById('v-note').value.trim();
+
+    if (!nome)              { highlight('v-nome');    showToast('⚠️ Inserisci il nome del condomino!'); return; }
+    if (!importo || importo <= 0) { highlight('v-importo'); showToast('⚠️ Inserisci un importo valido!'); return; }
+    if (!data)              { highlight('v-data');    showToast('⚠️ Inserisci la data!'); return; }
+
+    versRef.push({ nome, importo, data, note, ts: Date.now() });
+    document.getElementById('v-importo').value = '';
+    document.getElementById('v-note').value    = '';
+    document.getElementById('v-data').value    = todayISO();
+    showToast('✅ Versamento aggiunto!');
+  });
+
+  /* ── AGGIUNGI SPESA ── */
+  document.getElementById('s-submit').addEventListener('click', () => {
+    const tipo    = document.getElementById('s-tipo').value;
+    const importo = parseFloat(document.getElementById('s-importo').value);
+    const data    = document.getElementById('s-data').value;
+    const desc    = document.getElementById('s-desc').value.trim();
+
+    if (!tipo)              { highlight('s-tipo');    showToast('⚠️ Seleziona la tipologia!'); return; }
+    if (!importo || importo <= 0) { highlight('s-importo'); showToast('⚠️ Inserisci un importo valido!'); return; }
+    if (!data)              { highlight('s-data');    showToast('⚠️ Inserisci la data!'); return; }
+
+    speseRef.push({ tipo, importo, data, desc, ts: Date.now() });
+    document.getElementById('s-tipo').value    = '';
+    document.getElementById('s-importo').value = '';
+    document.getElementById('s-desc').value    = '';
+    document.getElementById('s-data').value    = todayISO();
+    showToast('✅ Spesa aggiunta!');
+  });
+
+  /* ── TABS ── */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`panel-${btn.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  /* ── HELPERS ── */
+  function highlight(id) {
+    const el = document.getElementById(id);
+    el.focus();
+    const orig = el.style.borderColor;
+    el.style.borderColor = '#ef5350';
+    setTimeout(() => el.style.borderColor = '', 1800);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
