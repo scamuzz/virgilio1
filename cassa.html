@@ -250,6 +250,30 @@
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 14px;
+    }
+    .filter-bar-label {
+      font-size: 0.70rem; font-weight: 700; color: #78909c;
+      text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;
+    }
+    .filter-btns {
+      display: flex; gap: 6px; flex: 1;
+    }
+    .filter-btn {
+      flex: 1; border: 2px solid #a5d6a7; border-radius: 20px;
+      padding: 7px 10px; font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: white; color: #2e7d32; text-align: center;
+    }
+    .filter-btn.active {
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: white; border-color: transparent;
+      box-shadow: 0 2px 10px rgba(46,125,50,0.25);
+    }
   </style>
 </head>
 <body>
@@ -294,6 +318,15 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="versamenti">💳 Versamenti</button>
     <button class="tab-btn" data-tab="spese">🧾 Spese</button>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <span class="filter-bar-label">📅 Periodo:</span>
+    <div class="filter-btns">
+      <button class="filter-btn active" data-filter="30">Ultimi 30 giorni</button>
+      <button class="filter-btn" data-filter="all">Tutti</button>
+    </div>
   </div>
 
   <!-- TAB: VERSAMENTI -->
@@ -399,6 +432,26 @@
 
   let versData  = {};
   let speseData = {};
+  let currentFilter = '30';   // '30' | 'all'
+
+  /* ── FILTER CUTOFF ── */
+  function cutoffISO() {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function applyFilter(entries) {
+    if (currentFilter === 'all') return entries;
+    const cutoff = cutoffISO();
+    return entries.filter(([, v]) => {
+      const dt = v.data || '';
+      return dt.length === 10 && dt >= cutoff;
+    });
+  }
 
   /* ── TODAY ── */
   function todayISO() {
@@ -460,8 +513,10 @@
 
   /* ── SALDO ── */
   function updateSaldo() {
-    const entrate = Object.values(versData).reduce((s, v) => s + Number(v.importo || 0), 0);
-    const uscite  = Object.values(speseData).reduce((s, v) => s + Number(v.importo || 0), 0);
+    const vEntries = applyFilter(Object.entries(versData));
+    const sEntries = applyFilter(Object.entries(speseData));
+    const entrate = vEntries.reduce((s, [, v]) => s + Number(v.importo || 0), 0);
+    const uscite  = sEntries.reduce((s, [, v]) => s + Number(v.importo || 0), 0);
     const saldo   = entrate - uscite;
 
     document.getElementById('entrate-display').textContent = fmtEuro(entrate);
@@ -474,7 +529,7 @@
   /* ── RENDER VERSAMENTI ── */
   function renderVersamenti() {
     const container = document.getElementById('versamenti-container');
-    const entries   = Object.entries(versData).sort(([,a],[,b]) => b.ts - a.ts);
+    const entries   = applyFilter(Object.entries(versData)).sort(([,a],[,b]) => b.ts - a.ts);
 
     document.getElementById('v-list-label').textContent = `📋 Versamenti (${entries.length})`;
 
@@ -509,7 +564,7 @@
   /* ── RENDER SPESE ── */
   function renderSpese() {
     const container = document.getElementById('spese-container');
-    const entries   = Object.entries(speseData).sort(([,a],[,b]) => b.ts - a.ts);
+    const entries   = applyFilter(Object.entries(speseData)).sort(([,a],[,b]) => b.ts - a.ts);
 
     document.getElementById('s-list-label').textContent = `📋 Spese (${entries.length})`;
 
@@ -596,6 +651,18 @@
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(`panel-${btn.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  /* ── FILTER BUTTONS ── */
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderVersamenti();
+      renderSpese();
+      updateSaldo();
     });
   });
 
