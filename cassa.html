@@ -251,6 +251,77 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
+    /* ── BANNER SOLA LETTURA ── */
+    .readonly-banner {
+      background: #fff8e1; border: 2px solid #ffe082; border-radius: 14px;
+      padding: 12px 16px; margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .readonly-banner-text {
+      font-size: 0.78rem; color: #795548; line-height: 1.5;
+    }
+    .readonly-banner-text strong { color: #5d4037; }
+    .unlock-btn {
+      border: none; border-radius: 20px; padding: 8px 16px;
+      font-size: 0.78rem; font-weight: 700; cursor: pointer;
+      background: linear-gradient(135deg, #f9a825, #f57f17);
+      color: white; white-space: nowrap; font-family: inherit;
+      box-shadow: 0 2px 8px rgba(245,127,23,0.30);
+      transition: opacity 0.2s;
+    }
+    .unlock-btn:hover { opacity: 0.85; }
+
+    .admin-banner {
+      background: #e8f5e9; border: 2px solid #a5d6a7; border-radius: 14px;
+      padding: 10px 16px; margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .admin-banner-text { font-size: 0.78rem; color: #2e7d32; font-weight: 700; }
+    .lock-btn {
+      border: none; border-radius: 20px; padding: 7px 14px;
+      font-size: 0.75rem; font-weight: 700; cursor: pointer;
+      background: #c8e6c9; color: #1b5e20; font-family: inherit;
+      transition: background 0.2s;
+    }
+    .lock-btn:hover { background: #a5d6a7; }
+
+    /* ── MODALE PIN ── */
+    .pin-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .pin-overlay.open { display: flex; }
+    .pin-modal {
+      background: white; border-radius: 20px; padding: 28px 24px;
+      width: min(340px, 90vw); box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+    .pin-modal h3 { font-size: 1rem; color: #1b5e20; margin-bottom: 8px; }
+    .pin-modal p  { font-size: 0.78rem; color: #78909c; margin-bottom: 18px; line-height: 1.5; }
+    .pin-input {
+      width: 100%; border: 2px solid #c8e6c9; border-radius: 12px;
+      padding: 12px; font-size: 1.4rem; text-align: center; letter-spacing: 6px;
+      outline: none; font-family: inherit; color: #1b5e20; margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .pin-input:focus { border-color: #2e7d32; }
+    .pin-input.error { border-color: #e53935; }
+    .pin-confirm-btn {
+      width: 100%; border: none; border-radius: 12px; padding: 12px;
+      font-size: 0.92rem; font-weight: 700; cursor: pointer; font-family: inherit;
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: white; box-shadow: 0 3px 12px rgba(46,125,50,0.30);
+      margin-bottom: 10px; transition: opacity 0.2s;
+    }
+    .pin-confirm-btn:hover { opacity: 0.88; }
+    .pin-cancel-btn {
+      width: 100%; border: none; border-radius: 12px; padding: 10px;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit;
+      background: #f5f5f5; color: #90a4ae;
+    }
+    .pin-error-msg { font-size: 0.75rem; color: #e53935; margin-bottom: 10px; display: none; }
+
     /* ── FILTER BAR ── */
     .filter-bar {
       display: flex; align-items: center; gap: 8px;
@@ -297,6 +368,32 @@
 </div>
 
 <div class="container">
+
+  <!-- Banner sola lettura / admin -->
+  <div class="readonly-banner" id="readonly-banner">
+    <div class="readonly-banner-text">
+      👁️ <strong>Vista sola lettura.</strong><br>
+      Solo il tesoriere può inserire o eliminare voci.
+    </div>
+    <button class="unlock-btn" id="unlock-btn">🔑 Accedi</button>
+  </div>
+  <div class="admin-banner" id="admin-banner" style="display:none">
+    <div class="admin-banner-text">🔓 Modalità tesoriere attiva</div>
+    <button class="lock-btn" id="lock-btn">🔒 Esci</button>
+  </div>
+
+  <!-- Modale PIN -->
+  <div class="pin-overlay" id="pin-overlay">
+    <div class="pin-modal">
+      <h3>🔑 Accesso tesoriere</h3>
+      <p>Inserisci il PIN per sbloccare la modalità di inserimento e gestione.</p>
+      <input class="pin-input" type="password" id="pin-input" maxlength="8"
+             inputmode="numeric" placeholder="••••" autocomplete="off"/>
+      <div class="pin-error-msg" id="pin-error">❌ PIN non corretto. Riprova.</div>
+      <button class="pin-confirm-btn" id="pin-confirm">✔ Conferma</button>
+      <button class="pin-cancel-btn" id="pin-cancel">Annulla</button>
+    </div>
+  </div>
 
   <!-- Saldo -->
   <div class="saldo-card">
@@ -413,6 +510,75 @@
 <div class="page-footer">💰 Cassa Comune • Virgilio 1</div>
 <div class="toast" id="toast"></div>
 
+<script>
+  /* ── PIN TESORIERE ──────────────────────────────────────────────
+     Per cambiare il PIN: genera il SHA-256 del nuovo PIN su
+     https://emn178.github.io/online-tools/sha256.html
+     e sostituisci la stringa qui sotto.
+     PIN attuale: 1234
+  ─────────────────────────────────────────────────────────────── */
+  const ADMIN_PIN_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+  const SESSION_KEY    = 'cassaAdmin';
+
+  let isAdmin = sessionStorage.getItem(SESSION_KEY) === '1';
+
+  async function sha256(text) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function applyAdminUI() {
+    document.getElementById('readonly-banner').style.display = isAdmin ? 'none'  : '';
+    document.getElementById('admin-banner').style.display    = isAdmin ? ''      : 'none';
+    document.querySelectorAll('.entry-form').forEach(f  => f.style.display = isAdmin ? '' : 'none');
+    document.querySelectorAll('.delete-btn').forEach(b  => b.style.display = isAdmin ? '' : 'none');
+  }
+
+  document.getElementById('unlock-btn').addEventListener('click', () => {
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').classList.remove('error');
+    document.getElementById('pin-error').style.display = 'none';
+    document.getElementById('pin-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('pin-input').focus(), 80);
+  });
+
+  document.getElementById('pin-cancel').addEventListener('click', () => {
+    document.getElementById('pin-overlay').classList.remove('open');
+  });
+
+  document.getElementById('pin-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('pin-overlay'))
+      document.getElementById('pin-overlay').classList.remove('open');
+  });
+
+  async function confirmPin() {
+    const val = document.getElementById('pin-input').value;
+    const hash = await sha256(val);
+    if (hash === ADMIN_PIN_HASH) {
+      isAdmin = true;
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('pin-overlay').classList.remove('open');
+      applyAdminUI();
+    } else {
+      const inp = document.getElementById('pin-input');
+      inp.classList.add('error');
+      inp.value = '';
+      document.getElementById('pin-error').style.display = 'block';
+      setTimeout(() => { inp.classList.remove('error'); inp.focus(); }, 1500);
+    }
+  }
+
+  document.getElementById('pin-confirm').addEventListener('click', confirmPin);
+  document.getElementById('pin-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') confirmPin();
+  });
+
+  document.getElementById('lock-btn').addEventListener('click', () => {
+    isAdmin = false;
+    sessionStorage.removeItem(SESSION_KEY);
+    applyAdminUI();
+  });
+</script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -598,6 +764,7 @@
 
   function attachDeleteListeners(container) {
     container.querySelectorAll('.delete-btn').forEach(btn => {
+      if (!isAdmin) btn.style.display = 'none';
       btn.addEventListener('click', () => {
         if (confirm('Eliminare questa voce?')) {
           db.ref(`cassa/${btn.dataset.ref}/${btn.dataset.id}`).remove();
@@ -680,6 +847,9 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2600);
   }
+
+  /* Applica stato admin al caricamento */
+  applyAdminUI();
 </script>
 </body>
 </html>
