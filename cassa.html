@@ -497,6 +497,14 @@
 
   <!-- TAB: SPESE -->
   <div class="tab-panel" id="panel-spese">
+    <div class="filter-bar">
+      <span class="filter-bar-label">📅 Periodo:</span>
+      <div class="filter-btns">
+        <button class="filter-btn active" data-filter="30">Ultimi 30 giorni</button>
+        <button class="filter-btn" data-filter="all">Tutti</button>
+      </div>
+    </div>
+
     <div class="entry-form">
       <h3>🧾 Nuova spesa</h3>
       <div class="form-group">
@@ -898,13 +906,15 @@
     });
   });
 
-  /* ── FILTER BUTTONS (solo nel sub-panel dettaglio) ── */
+  /* ── FILTER BUTTONS ── */
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
       currentFilter = btn.dataset.filter;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.filter === currentFilter);
+      });
       renderVersamenti();
+      renderSpese();
     });
   });
 
