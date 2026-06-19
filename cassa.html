@@ -345,6 +345,25 @@
       color: white; border-color: transparent;
       box-shadow: 0 2px 10px rgba(46,125,50,0.25);
     }
+
+    /* ── CHIP CONDOMINI ── */
+    .condo-chips {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      margin-bottom: 14px;
+    }
+    .condo-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: white; border: 2px solid #a5d6a7;
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 0.76rem; font-weight: 700; color: #2e7d32;
+      box-shadow: 0 1px 6px rgba(46,125,50,0.10);
+      white-space: nowrap;
+    }
+    .condo-chip-amount {
+      background: #e8f5e9; border-radius: 12px;
+      padding: 2px 7px; font-size: 0.72rem;
+      color: #1b5e20; font-weight: 800;
+    }
   </style>
 </head>
 <body>
@@ -425,6 +444,9 @@
       <button class="filter-btn" data-filter="all">Tutti</button>
     </div>
   </div>
+
+  <!-- Chip totali per condomino -->
+  <div class="condo-chips" id="condo-chips"></div>
 
   <!-- TAB: VERSAMENTI -->
   <div class="tab-panel active" id="panel-versamenti">
@@ -692,12 +714,35 @@
     saldoEl.className   = 'saldo-amount' + (saldo < 0 ? ' negativo' : '');
   }
 
+  /* ── RENDER CHIP CONDOMINI ── */
+  function renderCondominiChips() {
+    const container = document.getElementById('condo-chips');
+    const entries = applyFilter(Object.entries(versData));
+    const totals = {};
+    entries.forEach(([, v]) => {
+      const nome = v.nome || '—';
+      totals[nome] = (totals[nome] || 0) + Number(v.importo || 0);
+    });
+    const sorted = Object.entries(totals).sort(([a], [b]) => a.localeCompare(b, 'it'));
+    if (sorted.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+    container.innerHTML = sorted.map(([nome, tot]) => `
+      <div class="condo-chip">
+        👤 ${esc(nome)}
+        <span class="condo-chip-amount">${fmtEuro(tot)}</span>
+      </div>`
+    ).join('');
+  }
+
   /* ── RENDER VERSAMENTI ── */
   function renderVersamenti() {
     const container = document.getElementById('versamenti-container');
     const entries   = applyFilter(Object.entries(versData)).sort(([,a],[,b]) => b.ts - a.ts);
 
     document.getElementById('v-list-label').textContent = `📋 Versamenti (${entries.length})`;
+    renderCondominiChips();
 
     if (entries.length === 0) {
       container.innerHTML = `
