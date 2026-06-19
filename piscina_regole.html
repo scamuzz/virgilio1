@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #fff; color: #1a1a1a; padding: 32px; font-size: 13px; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #666; margin-bottom: 24px; }
+  .section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 10px; }
+  .section { margin-bottom: 20px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card { background: #fff; border: 0.5px solid #ddd; border-radius: 10px; padding: 14px 16px; }
+  .card-title { font-size: 13px; font-weight: 500; color: #111; margin-bottom: 8px; }
+  .row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+  .icon { font-size: 14px; flex-shrink: 0; color: #888; margin-top: 1px; }
+  .text { font-size: 13px; color: #555; line-height: 1.5; }
+  .hl { font-weight: 500; color: #111; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 500; padding: 3px 12px; border-radius: 6px; margin-bottom: 5px; }
+  .badge-warn { background: #fff7e0; color: #8a5c00; }
+  .alert { border-left: 2px solid #e6a800; padding: 10px 14px; background: #fffbf0; border-radius: 0; margin-top: 10px; }
+  .check { color: #2e7d32; }
+  .cross { color: #c62828; }
+</style>
+</head>
+<body>
+  <h1>🏊 Piscina — Regole principali</h1>
+  <div class="subtitle">Condominio Virgilio 1 · Treviglio</div>
+
+  <div class="section">
+    <div class="section-label">🕐 Orari e fasce di quiete</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Orario giornaliero</div>
+        <div class="row"><span class="icon">→</span><span class="text">Apertura: <span class="hl">07:30</span> — Chiusura: <span class="hl">23:00</span></span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Fasce di quiete</div>
+        <div class="text" style="margin-bottom: 10px;">Durante queste fasce sono vietati giochi e schiamazzi. La piscina è aperta solo per nuoto/bagno tranquillo.</div>
+        <div><span class="badge badge-warn">07:30 – 09:30</span></div>
+        <div><span class="badge badge-warn">14:00 – 16:00</span></div>
+        <div><span class="badge badge-warn">20:00 – 23:00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">👥 Ospiti ammessi</div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">Giorni feriali</div>
+        <div class="row"><span class="check">✓</span><span class="text">Condomini residenti</span></div>
+        <div class="row"><span class="check">✓</span><span class="text">Accompagnatore di minori (familiari / babysitter) — max <span class="hl">1 persona</span></span></div>
+        <div class="row"><span class="check">✓</span><span class="text">Ospiti: fino a <span class="hl">2 persone</span> oltre al nucleo familiare</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sabato e domenica</div>
+        <div class="row"><span class="check">✓</span><span class="text">Condomini residenti</span></div>
+        <div class="row"><span class="check">✓</span><span class="text">Accompagnatore di minori (familiari / babysitter) — max <span class="hl">1 persona</span></span></div>
+        <div class="row"><span class="cross">✗</span><span class="text">Ospiti non ammessi nel weekend</span></div>
+      </div>
+    </div>
+    <div class="alert">
+      <div class="row"><span class="icon">⚠</span><span class="text">Il proprietario deve essere <span class="hl">sempre presente</span> insieme agli ospiti e ne è responsabile.</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">📅 Stagione</div>
+    <div class="card" style="max-width: 340px;">
+      <div class="row"><span class="icon">→</span><span class="text">Apertura: <span class="hl">15 maggio</span></span></div>
+      <div class="row"><span class="icon">→</span><span class="text">Chiusura: <span class="hl">30 settembre</span></span></div>
+      <div class="row"><span class="icon">ℹ</span><span class="text">Possibile anticipo/posticipo su richiesta della maggioranza dei titolari delle quote piscina.</span></div>
+    </div>
+  </div>
+</body>
+</html>
