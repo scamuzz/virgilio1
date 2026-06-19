@@ -191,6 +191,12 @@
     .entry-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,125,50,0.12); }
     .entry-card.versamento { border-left: 4px solid #43a047; }
     .entry-card.spesa      { border-left: 4px solid #e53935; }
+    .entry-card.fondo-cassa {
+      border-left: 4px solid #1565c0;
+      background: #e8f0fe;
+      border-color: #90caf9;
+      margin-bottom: 12px;
+    }
 
     .entry-info { flex: 1; min-width: 0; }
     .entry-title {
@@ -759,15 +765,30 @@
       totals[nome] = (totals[nome] || 0) + Number(v.importo || 0);
     });
     const sorted = Object.entries(totals).sort(([a], [b]) => a.localeCompare(b, 'it'));
+
+    const entrate = Object.values(versData).reduce((s, v) => s + Number(v.importo || 0), 0);
+    const uscite  = Object.values(speseData).reduce((s, v) => s + Number(v.importo || 0), 0);
+    const saldo   = entrate - uscite;
+    const saldoColor = saldo < 0 ? 'amount-rosso' : 'amount-verde';
+    const fondoCassaCard = `
+      <div class="entry-card fondo-cassa">
+        <div class="entry-info">
+          <div class="entry-title">💰 Fondo Cassa</div>
+        </div>
+        <div class="entry-right">
+          <span class="entry-amount ${saldoColor}">${fmtEuro(saldo)}</span>
+        </div>
+      </div>`;
+
     if (sorted.length === 0) {
-      container.innerHTML = `
+      container.innerHTML = fondoCassaCard + `
         <div class="empty-state">
           <span class="emoji">💳</span>
           Nessun versamento registrato.
         </div>`;
       return;
     }
-    container.innerHTML = sorted.map(([nome, tot]) => `
+    container.innerHTML = fondoCassaCard + sorted.map(([nome, tot]) => `
       <div class="entry-card versamento">
         <div class="entry-info">
           <div class="entry-title">👤 ${esc(nome)}</div>
