@@ -180,8 +180,8 @@
 
     /* ── ENTRY CARD ── */
     .entry-card {
-      background: white; border-radius: 16px;
-      padding: 13px 15px; margin-bottom: 9px;
+      background: white; border-radius: 14px;
+      padding: 8px 12px; margin-bottom: 7px;
       box-shadow: 0 2px 12px rgba(46,125,50,0.07);
       border: 2px solid #e8f5e9;
       display: flex; align-items: flex-start;
@@ -346,24 +346,8 @@
       box-shadow: 0 2px 10px rgba(46,125,50,0.25);
     }
 
-    /* ── CHIP CONDOMINI ── */
-    .condo-chips {
-      display: flex; flex-wrap: wrap; gap: 7px;
-      margin-bottom: 14px;
-    }
-    .condo-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: white; border: 2px solid #a5d6a7;
-      border-radius: 20px; padding: 5px 12px;
-      font-size: 0.76rem; font-weight: 700; color: #2e7d32;
-      box-shadow: 0 1px 6px rgba(46,125,50,0.10);
-      white-space: nowrap;
-    }
-    .condo-chip-amount {
-      background: #e8f5e9; border-radius: 12px;
-      padding: 2px 7px; font-size: 0.72rem;
-      color: #1b5e20; font-weight: 800;
-    }
+    /* ── LISTA FAMIGLIE ── */
+    .condo-list { margin-bottom: 14px; }
 
     /* ── SUB-TABS (dentro versamenti) ── */
     .sub-tabs {
@@ -488,17 +472,17 @@
     <!-- Sub-tab buttons -->
     <div class="sub-tabs">
       <button class="sub-tab-btn active" data-subtab="totali">📊 Totali</button>
-      <button class="sub-tab-btn" data-subtab="elenco">📋 Elenco</button>
+      <button class="sub-tab-btn" data-subtab="dettaglio">📋 Dettaglio</button>
     </div>
 
-    <!-- Sub-panel: Totali per condomino (sempre su tutti i versamenti) -->
+    <!-- Sub-panel: Totali per famiglia (sempre su tutti i versamenti) -->
     <div class="sub-panel active" id="sub-panel-totali">
-      <div class="section-label">👥 Totali per condomino</div>
-      <div class="condo-chips" id="condo-chips"></div>
+      <div class="section-label">👥 Totali per famiglia</div>
+      <div class="condo-list" id="condo-list"></div>
     </div>
 
-    <!-- Sub-panel: Elenco versamenti con filtro per data -->
-    <div class="sub-panel" id="sub-panel-elenco">
+    <!-- Sub-panel: Dettaglio versamenti con filtro per data -->
+    <div class="sub-panel" id="sub-panel-dettaglio">
       <div class="filter-bar">
         <span class="filter-bar-label">📅 Periodo:</span>
         <div class="filter-btns">
@@ -743,9 +727,9 @@
     saldoEl.className   = 'saldo-amount' + (saldo < 0 ? ' negativo' : '');
   }
 
-  /* ── RENDER CHIP CONDOMINI (sempre su tutti i versamenti) ── */
+  /* ── RENDER LISTA FAMIGLIE (sempre su tutti i versamenti) ── */
   function renderCondominiChips() {
-    const container = document.getElementById('condo-chips');
+    const container = document.getElementById('condo-list');
     const entries = Object.entries(versData);
     const totals = {};
     entries.forEach(([, v]) => {
@@ -762,9 +746,13 @@
       return;
     }
     container.innerHTML = sorted.map(([nome, tot]) => `
-      <div class="condo-chip">
-        👤 ${esc(nome)}
-        <span class="condo-chip-amount">${fmtEuro(tot)}</span>
+      <div class="entry-card versamento">
+        <div class="entry-info">
+          <div class="entry-title">👤 ${esc(nome)}</div>
+        </div>
+        <div class="entry-right">
+          <span class="entry-amount amount-verde">${fmtEuro(tot)}</span>
+        </div>
       </div>`
     ).join('');
   }
@@ -910,7 +898,7 @@
     });
   });
 
-  /* ── FILTER BUTTONS (solo nel sub-panel elenco) ── */
+  /* ── FILTER BUTTONS (solo nel sub-panel dettaglio) ── */
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
