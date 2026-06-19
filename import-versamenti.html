@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Import Versamenti – Virgilio 1</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 2rem auto; padding: 1rem; }
+    h1 { font-size: 1.4rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+    th, td { border: 1px solid #ccc; padding: .4rem .6rem; text-align: left; }
+    th { background: #f0f0f0; }
+    tr.skip td { color: #aaa; text-decoration: line-through; }
+    #btn { padding: .7rem 2rem; font-size: 1rem; background: #43a047; color: #fff;
+           border: none; border-radius: 6px; cursor: pointer; margin-top: 1rem; }
+    #btn:disabled { background: #aaa; cursor: not-allowed; }
+    #log { margin-top: 1rem; white-space: pre-wrap; font-size: .85rem;
+           background: #f8f8f8; border: 1px solid #ddd; padding: .8rem; border-radius: 6px;
+           max-height: 260px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <h1>📥 Import Versamenti – Condominio Virgilio 1</h1>
+  <p>La tabella sottostante mostra i versamenti da caricare nel database di <strong>cassa.html</strong>.
+     Le righe barrate (importo 0) vengono saltate.</p>
+
+  <table id="preview">
+    <thead><tr><th>#</th><th>Nome</th><th>Importo (€)</th><th>Data</th><th>Note</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <button id="btn">💾 Carica nel database Firebase</button>
+  <div id="log"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey:        "AIzaSyAfOMeAkXUIandLUhCR8nfyELOPVRyD3WU",
+      authDomain:    "lista-spesa-b9eb1.firebaseapp.com",
+      databaseURL:   "https://lista-spesa-b9eb1-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:     "lista-spesa-b9eb1",
+      storageBucket: "lista-spesa-b9eb1.firebasestorage.app",
+    });
+    const versRef = firebase.database().ref('cassa/versamenti');
+
+    const versamenti = [
+      { importo: 20,  nome: "raccolta dicembre '24",    data: "2024-12-01", note: "" },
+      { importo: 10,  nome: "Bezzi",                    data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Roncali",                  data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Formichetti",               data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Antonaci",                  data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Bettini",                   data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Scamuzzi",                  data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Vimercati",                 data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Soliveri",                  data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Villari",                   data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Nozza",                     data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Manco",                     data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Capriglia",                 data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Pinori",                    data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "D'Apollo",                  data: "2025-05-01", note: "" },
+      { importo: 10,  nome: "Bezzi",                     data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "Roncali",                   data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "Formichetti",               data: "2026-04-01", note: "" },
+      { importo: 10,  nome: "Antonaci",                  data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "Bettini",                   data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "Scamuzzi",                  data: "2026-03-01", note: "" },
+      { importo: 0,   nome: "Vimercati",                 data: "2026-03-01", note: "non pagato" },
+      { importo: 10,  nome: "Soliveri",                  data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "Villari",                   data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "Nozza",                     data: "2026-04-01", note: "" },
+      { importo: 10,  nome: "Manco",                     data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "Capriglia",                 data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "Pinori",                    data: "2026-03-01", note: "" },
+      { importo: 10,  nome: "D'Apollo",                  data: "2026-03-01", note: "" },
+      { importo: 200, nome: "Simona",                    data: "2026-06-01", note: "vendita ombrellone piscina" },
+    ];
+
+    // Render preview table
+    const tbody = document.querySelector('#preview tbody');
+    versamenti.forEach((v, i) => {
+      const tr = document.createElement('tr');
+      if (v.importo === 0) tr.className = 'skip';
+      tr.innerHTML = `<td>${i + 1}</td><td>${v.nome}</td><td>${v.importo}</td><td>${v.data}</td><td>${v.note}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    const log = document.getElementById('log');
+    function addLog(msg) { log.textContent += msg + '\n'; log.scrollTop = log.scrollHeight; }
+
+    document.getElementById('btn').addEventListener('click', async () => {
+      const btn = document.getElementById('btn');
+      btn.disabled = true;
+      log.textContent = '';
+      addLog('Avvio importazione...\n');
+
+      let ok = 0, skip = 0, err = 0;
+      for (const v of versamenti) {
+        if (v.importo <= 0) {
+          addLog(`⏭  SALTATO: ${v.nome} (importo ${v.importo})`);
+          skip++;
+          continue;
+        }
+        try {
+          await versRef.push({ nome: v.nome, importo: v.importo, data: v.data, note: v.note, ts: Date.now() });
+          addLog(`✅ OK: ${v.nome}  €${v.importo}  ${v.data}`);
+          ok++;
+        } catch (e) {
+          addLog(`❌ ERRORE: ${v.nome} → ${e.message}`);
+          err++;
+        }
+      }
+      addLog(`\nImportazione completata: ${ok} inseriti, ${skip} saltati, ${err} errori.`);
+      btn.textContent = '✅ Importazione completata';
+    });
+  </script>
+</body>
+</html>
