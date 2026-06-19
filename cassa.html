@@ -364,6 +364,25 @@
       padding: 2px 7px; font-size: 0.72rem;
       color: #1b5e20; font-weight: 800;
     }
+
+    /* ── SUB-TABS (dentro versamenti) ── */
+    .sub-tabs {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px; margin-bottom: 14px;
+    }
+    .sub-tab-btn {
+      border: 2px solid #c8e6c9; border-radius: 12px;
+      padding: 9px 10px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: #f9fef9; color: #2e7d32; text-align: center;
+    }
+    .sub-tab-btn.active {
+      background: linear-gradient(135deg, #388e3c, #66bb6a);
+      color: white; border-color: transparent;
+      box-shadow: 0 2px 10px rgba(46,125,50,0.22);
+    }
+    .sub-panel { display: none; }
+    .sub-panel.active { display: block; }
   </style>
 </head>
 <body>
@@ -436,18 +455,6 @@
     <button class="tab-btn" data-tab="spese">🧾 Spese</button>
   </div>
 
-  <!-- Filter bar -->
-  <div class="filter-bar">
-    <span class="filter-bar-label">📅 Periodo:</span>
-    <div class="filter-btns">
-      <button class="filter-btn active" data-filter="30">Ultimi 30 giorni</button>
-      <button class="filter-btn" data-filter="all">Tutti</button>
-    </div>
-  </div>
-
-  <!-- Chip totali per condomino -->
-  <div class="condo-chips" id="condo-chips"></div>
-
   <!-- TAB: VERSAMENTI -->
   <div class="tab-panel active" id="panel-versamenti">
     <div class="entry-form">
@@ -478,8 +485,30 @@
       <button class="submit-btn" id="v-submit">💳 Aggiungi versamento</button>
     </div>
 
-    <div class="section-label" id="v-list-label">📋 Versamenti</div>
-    <div id="versamenti-container"></div>
+    <!-- Sub-tab buttons -->
+    <div class="sub-tabs">
+      <button class="sub-tab-btn active" data-subtab="totali">📊 Totali</button>
+      <button class="sub-tab-btn" data-subtab="elenco">📋 Elenco</button>
+    </div>
+
+    <!-- Sub-panel: Totali per condomino (sempre su tutti i versamenti) -->
+    <div class="sub-panel active" id="sub-panel-totali">
+      <div class="section-label">👥 Totali per condomino</div>
+      <div class="condo-chips" id="condo-chips"></div>
+    </div>
+
+    <!-- Sub-panel: Elenco versamenti con filtro per data -->
+    <div class="sub-panel" id="sub-panel-elenco">
+      <div class="filter-bar">
+        <span class="filter-bar-label">📅 Periodo:</span>
+        <div class="filter-btns">
+          <button class="filter-btn active" data-filter="30">Ultimi 30 giorni</button>
+          <button class="filter-btn" data-filter="all">Tutti</button>
+        </div>
+      </div>
+      <div class="section-label" id="v-list-label">📋 Versamenti</div>
+      <div id="versamenti-container"></div>
+    </div>
   </div>
 
   <!-- TAB: SPESE -->
@@ -714,10 +743,10 @@
     saldoEl.className   = 'saldo-amount' + (saldo < 0 ? ' negativo' : '');
   }
 
-  /* ── RENDER CHIP CONDOMINI ── */
+  /* ── RENDER CHIP CONDOMINI (sempre su tutti i versamenti) ── */
   function renderCondominiChips() {
     const container = document.getElementById('condo-chips');
-    const entries = applyFilter(Object.entries(versData));
+    const entries = Object.entries(versData);
     const totals = {};
     entries.forEach(([, v]) => {
       const nome = v.nome || '—';
@@ -725,7 +754,11 @@
     });
     const sorted = Object.entries(totals).sort(([a], [b]) => a.localeCompare(b, 'it'));
     if (sorted.length === 0) {
-      container.innerHTML = '';
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="emoji">💳</span>
+          Nessun versamento registrato.
+        </div>`;
       return;
     }
     container.innerHTML = sorted.map(([nome, tot]) => `
@@ -739,7 +772,8 @@
   /* ── RENDER VERSAMENTI ── */
   function renderVersamenti() {
     const container = document.getElementById('versamenti-container');
-    const entries   = applyFilter(Object.entries(versData)).sort(([,a],[,b]) => b.ts - a.ts);
+    const entries   = applyFilter(Object.entries(versData))
+                        .sort(([,a],[,b]) => (b.data || '').localeCompare(a.data || '') || b.ts - a.ts);
 
     document.getElementById('v-list-label').textContent = `📋 Versamenti (${entries.length})`;
     renderCondominiChips();
@@ -866,15 +900,23 @@
     });
   });
 
-  /* ── FILTER BUTTONS ── */
+  /* ── SUB-TABS (dentro versamenti) ── */
+  document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`sub-panel-${btn.dataset.subtab}`).classList.add('active');
+    });
+  });
+
+  /* ── FILTER BUTTONS (solo nel sub-panel elenco) ── */
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.filter;
       renderVersamenti();
-      renderSpese();
-      updateSaldo();
     });
   });
 
