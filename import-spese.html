@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Import Spese – Virgilio 1</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 1rem; }
+    h1 { font-size: 1.4rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+    th, td { border: 1px solid #ccc; padding: .4rem .6rem; text-align: left; }
+    th { background: #f0f0f0; }
+    tr.skip td { color: #aaa; text-decoration: line-through; }
+    #btn { padding: .7rem 2rem; font-size: 1rem; background: #e53935; color: #fff;
+           border: none; border-radius: 6px; cursor: pointer; margin-top: 1rem; }
+    #btn:disabled { background: #aaa; cursor: not-allowed; }
+    #log { margin-top: 1rem; white-space: pre-wrap; font-size: .85rem;
+           background: #f8f8f8; border: 1px solid #ddd; padding: .8rem; border-radius: 6px;
+           max-height: 260px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <h1>📥 Import Spese – Condominio Virgilio 1</h1>
+  <p>La tabella sottostante mostra le spese da caricare nel database di <strong>cassa.html</strong>.
+     Le righe barrate (importo 0) vengono saltate.</p>
+
+  <table id="preview">
+    <thead><tr><th>#</th><th>Tipo</th><th>Importo (€)</th><th>Data</th><th>Descrizione</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <button id="btn">💾 Carica nel database Firebase</button>
+  <div id="log"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    firebase.initializeApp({
+      apiKey:        "AIzaSyAfOMeAkXUIandLUhCR8nfyELOPVRyD3WU",
+      authDomain:    "lista-spesa-b9eb1.firebaseapp.com",
+      databaseURL:   "https://lista-spesa-b9eb1-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:     "lista-spesa-b9eb1",
+      storageBucket: "lista-spesa-b9eb1.firebasestorage.app",
+    });
+    const speseRef = firebase.database().ref('cassa/spese');
+
+    const spese = [
+      { tipo: "🌿 Giardinaggio",          importo: 51.6,  data: "2025-04-01", desc: "fiori aiuola comune primavera '25" },
+      { tipo: "🔧 Manutenzione ordinaria", importo: 1.36,  data: "2025-06-01", desc: "Rubinetto doccia" },
+      { tipo: "🌿 Giardinaggio",          importo: 1.99,  data: "2025-06-01", desc: "Rosmarino scala A" },
+      { tipo: "📦 Materiali e forniture",  importo: 33.37, data: "2025-06-01", desc: "Rete di protezione locale scala B" },
+      { tipo: "📦 Materiali e forniture",  importo: 26.13, data: "2025-06-01", desc: "Rete di protezione locale scala A" },
+      { tipo: "🏊 Piscina",               importo: 31.6,  data: "2025-06-01", desc: "tubo pompa piscina (acquisto Villari)" },
+      { tipo: "🌿 Giardinaggio",          importo: 45.5,  data: "2026-04-01", desc: "fiori aiuole primavera 2026" },
+    ];
+
+    // Render preview table
+    const tbody = document.querySelector('#preview tbody');
+    spese.forEach((s, i) => {
+      const tr = document.createElement('tr');
+      if (s.importo === 0) tr.className = 'skip';
+      tr.innerHTML = `<td>${i + 1}</td><td>${s.tipo}</td><td>${s.importo}</td><td>${s.data}</td><td>${s.desc}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    const log = document.getElementById('log');
+    function addLog(msg) { log.textContent += msg + '\n'; log.scrollTop = log.scrollHeight; }
+
+    document.getElementById('btn').addEventListener('click', async () => {
+      const btn = document.getElementById('btn');
+      btn.disabled = true;
+      log.textContent = '';
+      addLog('Avvio importazione...\n');
+
+      let ok = 0, skip = 0, err = 0;
+      for (const s of spese) {
+        if (s.importo <= 0) {
+          addLog(`⏭  SALTATO: ${s.desc} (importo ${s.importo})`);
+          skip++;
+          continue;
+        }
+        try {
+          await speseRef.push({ tipo: s.tipo, importo: s.importo, data: s.data, desc: s.desc, ts: Date.now() });
+          addLog(`✅ OK: ${s.desc}  €${s.importo}  ${s.data}`);
+          ok++;
+        } catch (e) {
+          addLog(`❌ ERRORE: ${s.desc} → ${e.message}`);
+          err++;
+        }
+      }
+      addLog(`\nImportazione completata: ${ok} inseriti, ${skip} saltati, ${err} errori.`);
+      btn.textContent = '✅ Importazione completata';
+    });
+  </script>
+</body>
+</html>
