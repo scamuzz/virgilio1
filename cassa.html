@@ -764,19 +764,18 @@
       const nome = v.nome || '—';
       totals[nome] = (totals[nome] || 0) + Number(v.importo || 0);
     });
-    const sorted = Object.entries(totals).sort(([a], [b]) => a.localeCompare(b, 'it'));
+    const fondoCassaTot = totals['Fondo Cassa'] || 0;
+    const sorted = Object.entries(totals)
+      .filter(([nome]) => nome !== 'Fondo Cassa')
+      .sort(([a], [b]) => a.localeCompare(b, 'it'));
 
-    const entrate = Object.values(versData).reduce((s, v) => s + Number(v.importo || 0), 0);
-    const uscite  = Object.values(speseData).reduce((s, v) => s + Number(v.importo || 0), 0);
-    const saldo   = entrate - uscite;
-    const saldoColor = saldo < 0 ? 'amount-rosso' : 'amount-verde';
     const fondoCassaCard = `
       <div class="entry-card fondo-cassa">
         <div class="entry-info">
           <div class="entry-title">💰 Fondo Cassa</div>
         </div>
         <div class="entry-right">
-          <span class="entry-amount ${saldoColor}">${fmtEuro(saldo)}</span>
+          <span class="entry-amount amount-verde">${fmtEuro(fondoCassaTot)}</span>
         </div>
       </div>`;
 
