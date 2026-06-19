@@ -445,10 +445,24 @@
       <h3>💳 Nuovo versamento</h3>
       <div class="form-group">
         <label class="form-label">👤 Condomino</label>
-        <input class="form-input" type="text" id="v-nome"
-               placeholder="Es. Appartamento 3, Marco R.…" maxlength="50"
-               autocomplete="off" spellcheck="false"/>
-        <div class="name-hint">Il nome viene ricordato automaticamente.</div>
+        <select class="form-select" id="v-nome">
+          <option value="">— Seleziona condomino —</option>
+          <option>Antonaci</option>
+          <option>Bettini</option>
+          <option>Bezzi</option>
+          <option>Capriglia</option>
+          <option>Condominio</option>
+          <option>D'Apollo</option>
+          <option>Formichetti</option>
+          <option>Manco</option>
+          <option>Nozza</option>
+          <option>Pinori</option>
+          <option>Roncali</option>
+          <option>Scamuzzi</option>
+          <option>Soliveri</option>
+          <option>Villari</option>
+          <option>Vimercati</option>
+        </select>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -674,7 +688,7 @@
   /* ── NOME CONDOMINO ── */
   const vNome = document.getElementById('v-nome');
   vNome.value = localStorage.getItem('condoName') || '';
-  vNome.addEventListener('input', () =>
+  vNome.addEventListener('change', () =>
     localStorage.setItem('condoName', vNome.value.trim())
   );
 
