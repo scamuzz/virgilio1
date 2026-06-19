@@ -679,10 +679,10 @@
 
   /* ── SALDO ── */
   function updateSaldo() {
-    const vEntries = applyFilter(Object.entries(versData));
-    const sEntries = applyFilter(Object.entries(speseData));
-    const entrate = vEntries.reduce((s, [, v]) => s + Number(v.importo || 0), 0);
-    const uscite  = sEntries.reduce((s, [, v]) => s + Number(v.importo || 0), 0);
+    const vEntries = Object.values(versData);
+    const sEntries = Object.values(speseData);
+    const entrate = vEntries.reduce((s, v) => s + Number(v.importo || 0), 0);
+    const uscite  = sEntries.reduce((s, v) => s + Number(v.importo || 0), 0);
     const saldo   = entrate - uscite;
 
     document.getElementById('entrate-display').textContent = fmtEuro(entrate);
