@@ -348,21 +348,27 @@
 
     /* ── CHIP CONDOMINI ── */
     .condo-chips {
-      display: flex; flex-wrap: wrap; gap: 7px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 7px;
       margin-bottom: 14px;
     }
     .condo-chip {
-      display: inline-flex; align-items: center; gap: 5px;
+      display: flex; align-items: center; justify-content: space-between; gap: 5px;
       background: white; border: 2px solid #a5d6a7;
       border-radius: 20px; padding: 5px 12px;
       font-size: 0.76rem; font-weight: 700; color: #2e7d32;
       box-shadow: 0 1px 6px rgba(46,125,50,0.10);
-      white-space: nowrap;
+      overflow: hidden;
+    }
+    .condo-chip-name {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
     .condo-chip-amount {
       background: #e8f5e9; border-radius: 12px;
       padding: 2px 7px; font-size: 0.72rem;
       color: #1b5e20; font-weight: 800;
+      flex-shrink: 0;
     }
   </style>
 </head>
@@ -717,9 +723,8 @@
   /* ── RENDER CHIP CONDOMINI ── */
   function renderCondominiChips() {
     const container = document.getElementById('condo-chips');
-    const entries = applyFilter(Object.entries(versData));
     const totals = {};
-    entries.forEach(([, v]) => {
+    Object.values(versData).forEach(v => {
       const nome = v.nome || '—';
       totals[nome] = (totals[nome] || 0) + Number(v.importo || 0);
     });
@@ -730,7 +735,7 @@
     }
     container.innerHTML = sorted.map(([nome, tot]) => `
       <div class="condo-chip">
-        👤 ${esc(nome)}
+        <span class="condo-chip-name">👤 ${esc(nome)}</span>
         <span class="condo-chip-amount">${fmtEuro(tot)}</span>
       </div>`
     ).join('');
