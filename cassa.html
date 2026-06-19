@@ -817,10 +817,12 @@
       return;
     }
 
-    container.innerHTML = entries.map(([id, v]) => `
-      <div class="entry-card versamento">
+    container.innerHTML = entries.map(([id, v]) => {
+      const isFondo = v.nome === 'Fondo Cassa';
+      return `
+      <div class="entry-card ${isFondo ? 'fondo-cassa' : 'versamento'}">
         <div class="entry-info">
-          <div class="entry-title">👤 ${esc(v.nome)}</div>
+          <div class="entry-title">${isFondo ? '💰' : '👤'} ${esc(v.nome)}</div>
           <div class="entry-sub">
             <span>📅 ${fmtDate(v.data)}</span>
             ${v.note ? `<span class="entry-tag tag-tipo">${esc(v.note)}</span>` : ''}
@@ -830,8 +832,8 @@
           <span class="entry-amount amount-verde">+${fmtEuro(v.importo)}</span>
           <button class="delete-btn" data-ref="versamenti" data-id="${id}" title="Elimina">🗑️</button>
         </div>
-      </div>`
-    ).join('');
+      </div>`;
+    }).join('');
 
     attachDeleteListeners(container);
   }
