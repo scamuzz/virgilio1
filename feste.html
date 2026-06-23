@@ -835,8 +835,7 @@
     };
 
     if (editingEventId && eventiData[editingEventId]) {
-      eventiRef.child(editingEventId).child('info').set(infoPayload).then(() => {
-        if (currentEventId !== editingEventId) currentEventIdRef.set(editingEventId);
+      eventiRef.child(editingEventId).child('info').update({ ...infoPayload, chiuso: null }).then(() => {
         closeEventEditor();
         showToast('💾 Evento aggiornato');
       }).catch(() => showToast('⚠️ Impossibile aggiornare l’evento'));
