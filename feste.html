@@ -732,7 +732,8 @@
     if (!ref) return;
     ref.remove().then(() => {
       currentEventId = '';
-      currentEventIdRef.set(null);
+      return currentEventIdRef.set(null);
+    }).then(() => {
       if (editingEventId === deletedEventId) closeEventEditor();
       showToast('🗑️ Evento cancellato');
     }).catch(() => showToast('⚠️ Impossibile cancellare l’evento'));
@@ -841,7 +842,7 @@
       const infoRef = eventiRef.child(editingEventId).child('info');
       const infoVal = eventiData[editingEventId].info || {};
       const ops = [infoRef.update(infoPayload)];
-      if (infoVal.hasOwnProperty('chiuso')) ops.push(infoRef.child('chiuso').remove());
+      if (Object.prototype.hasOwnProperty.call(infoVal, 'chiuso')) ops.push(infoRef.child('chiuso').remove());
       Promise.all(ops).then(() => {
         closeEventEditor();
         showToast('💾 Evento aggiornato');
