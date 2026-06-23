@@ -450,7 +450,14 @@
   }
 
   function myKey() {
-    return myName().toLowerCase().replace(/[^a-z0-9]/g, '_');
+    return myName()
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[.#$[\]/]/g, '');
+  }
+
+  function serverTs() {
+    return firebase.database.ServerValue.TIMESTAMP;
   }
 
   function categoryLabel(key) {
@@ -530,7 +537,7 @@
       data,
       note,
       chiuso: !!current.chiuso,
-      updatedAt: Date.now()
+      updatedAt: serverTs()
     };
 
     eventiRef.child('info').set(payload);
@@ -568,7 +575,7 @@
     eventiRef
       .child('partecipazioni')
       .child(myKey())
-      .set({ nome: myName(), stato, updatedAt: Date.now() });
+      .set({ nome: myName(), stato, updatedAt: serverTs() });
 
     showToast(stato === 'si' ? '✅ Partecipazione confermata' : '❌ Non partecipazione registrata');
   }
@@ -610,7 +617,7 @@
         nome: myName(),
         qty,
         descrizione,
-        updatedAt: Date.now()
+        updatedAt: serverTs()
       });
 
     itemQty.value = '';
