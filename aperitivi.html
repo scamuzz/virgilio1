@@ -458,7 +458,7 @@
     const raw = currentName.toLowerCase().replace(/\s+/g, '_');
     const safe = raw.replace(/[.#$/\[\]]/g, '');
     if (safe) return safe;
-    return encodeURIComponent(raw).replace(/%/g, '') || 'utente';
+    return 'utente';
   }
 
   function serverTs() {
