@@ -459,7 +459,7 @@
     const forbidden = new Set(['.', '#', '$', '[', ']', '/']);
     const safe = Array.from(raw).filter(ch => !forbidden.has(ch)).join('');
     if (safe) return safe;
-    return `utente_${encodeURIComponent(raw).replace(/%/g, '')}`;
+    return `utente_${encodeURIComponent(raw).replace(/%/g, '_')}`;
   }
 
   function serverTs() {
@@ -674,7 +674,8 @@
     Object.values(parte).forEach(p => {
       if (!p) return;
       if (p.stato !== RSVP_YES && p.stato !== RSVP_NO) {
-        console.warn('Invalid RSVP status ignored:', p.stato);
+        const who = p.nome || 'unknown';
+        console.warn(`Invalid RSVP status ignored for ${who}:`, p.stato);
         return;
       }
       if (p.stato === RSVP_YES) {
