@@ -380,7 +380,8 @@
         <label class="label" for="event-selector">Seleziona evento</label>
         <select id="event-selector" class="select"></select>
       </div>
-      <button id="toggle-lock-btn" class="btn btn-ghost" type="button">🔓 Evento aperto</button>
+      <button id="edit-event-btn" class="btn btn-ghost" type="button">✏️ Modifica evento</button>
+      <button id="delete-event-btn" class="btn btn-ghost btn-danger" type="button">🗑️ Cancella evento</button>
     </div>
   </div>
 
@@ -390,7 +391,7 @@
       <button id="rsvp-yes-btn" class="btn btn-ghost btn-yes">✅ Partecipo</button>
       <button id="rsvp-no-btn" class="btn btn-ghost btn-no">❌ Non partecipo</button>
     </div>
-    <div class="helper">Puoi cambiare risposta in qualsiasi momento (se evento aperto).</div>
+    <div class="helper">Puoi cambiare risposta in qualsiasi momento.</div>
   </div>
 
   <div class="card">
@@ -452,7 +453,7 @@
     <textarea id="event-note" class="textarea" maxlength="500" placeholder="Orario, luogo, indicazioni..."></textarea>
 
     <button id="save-event-btn" class="btn btn-primary" style="width:100%; margin-top:10px;">💾 Salva evento</button>
-    <div class="helper">Quando l'evento è chiuso, RSVP e contributi vengono bloccati.</div>
+    <div class="helper">Puoi creare un nuovo evento o aggiornare quello selezionato.</div>
   </div>
 </div>
 
@@ -497,16 +498,20 @@
   let eventiData = {};
   let currentEventId = '';
   let editingContribution = null;
+  let editingEventId = '';
   let legacyMigrationChecked = false;
 
   const nameInput = document.getElementById('resident-name');
   const eventSelector = document.getElementById('event-selector');
   const showEventEditorBtn = document.getElementById('show-event-editor-btn');
+  const editEventBtn = document.getElementById('edit-event-btn');
+  const deleteEventBtn = document.getElementById('delete-event-btn');
   const eventEditorCard = document.getElementById('event-editor-card');
   const eventTitleInput = document.getElementById('event-title');
   const eventDateInput = document.getElementById('event-date');
   const eventTimeInput = document.getElementById('event-time');
   const eventNoteInput = document.getElementById('event-note');
+  const saveEventBtn = document.getElementById('save-event-btn');
   const itemCategory = document.getElementById('item-category');
   const itemQty = document.getElementById('item-qty');
   const itemDesc = document.getElementById('item-desc');
@@ -598,11 +603,6 @@
     return evt && evt.info ? evt.info : {};
   }
 
-  function isLocked() {
-    const info = currentInfo();
-    return !!info.chiuso;
-  }
-
   function hasConfiguredEvent() {
     const info = currentInfo();
     return !!(cleanString(info.titolo) && cleanString(info.data));
@@ -631,16 +631,22 @@
     cancelEditItemBtn.classList.add('hidden');
   }
 
-  function openNewEventEditor() {
+  function openEventEditor(eventId = '') {
+    const eventVal = eventId && eventiData[eventId] ? eventiData[eventId] : null;
+    const info = eventVal && eventVal.info ? eventVal.info : {};
+    editingEventId = eventVal ? eventId : '';
     eventEditorCard.classList.remove('hidden');
-    eventTitleInput.value = '';
-    eventDateInput.value = '';
-    eventTimeInput.value = '';
-    eventNoteInput.value = '';
+    eventTitleInput.value = cleanString(info.titolo);
+    eventDateInput.value = cleanString(info.data);
+    eventTimeInput.value = cleanString(info.ora);
+    eventNoteInput.value = cleanString(info.note);
+    saveEventBtn.textContent = editingEventId ? '💾 Aggiorna evento' : '💾 Salva evento';
     eventTitleInput.focus();
   }
 
-  function closeNewEventEditor() {
+  function closeEventEditor() {
+    editingEventId = '';
+    saveEventBtn.textContent = '💾 Salva evento';
     eventEditorCard.classList.add('hidden');
   }
 
@@ -700,10 +706,33 @@
 
   showEventEditorBtn.addEventListener('click', () => {
     if (!eventEditorCard.classList.contains('hidden')) {
-      closeNewEventEditor();
+      closeEventEditor();
       return;
     }
-    openNewEventEditor();
+    openEventEditor();
+  });
+
+  editEventBtn.addEventListener('click', () => {
+    if (!hasConfiguredEvent()) {
+      showToast('⚠️ Seleziona prima un evento valido');
+      return;
+    }
+    openEventEditor(currentEventId);
+  });
+
+  deleteEventBtn.addEventListener('click', () => {
+    if (!hasConfiguredEvent()) {
+      showToast('⚠️ Seleziona prima un evento valido');
+      return;
+    }
+    const confirmed = window.confirm('Vuoi cancellare questo evento? Verranno rimossi anche partecipazioni e contributi.');
+    if (!confirmed) return;
+    const ref = currentEventRef();
+    if (!ref) return;
+    ref.remove().then(() => {
+      if (editingEventId === currentEventId) closeEventEditor();
+      showToast('🗑️ Evento cancellato');
+    }).catch(() => showToast('⚠️ Impossibile cancellare l’evento'));
   });
 
   cancelEditItemBtn.addEventListener('click', () => {
@@ -728,11 +757,6 @@
       showToast('⛔ Puoi modificare solo i tuoi contributi');
       return;
     }
-    if (isLocked()) {
-      showToast('🔒 Evento chiuso: modifiche bloccate');
-      return;
-    }
-
     if (action === 'edit') {
       editingContribution = { categoria, itemId };
       itemCategory.value = categoria;
@@ -785,7 +809,7 @@
     render();
   });
 
-  document.getElementById('save-event-btn').addEventListener('click', () => {
+  saveEventBtn.addEventListener('click', () => {
     const titolo = cleanString(eventTitleInput.value);
     const data = cleanString(eventDateInput.value);
     const ora = cleanString(eventTimeInput.value);
@@ -802,15 +826,25 @@
       return;
     }
 
+    const infoPayload = {
+      titolo,
+      data,
+      ora,
+      note,
+      updatedAt: serverTs()
+    };
+
+    if (editingEventId && eventiData[editingEventId]) {
+      eventiRef.child(editingEventId).child('info').update(infoPayload).then(() => {
+        currentEventIdRef.set(editingEventId);
+        closeEventEditor();
+        showToast('💾 Evento aggiornato');
+      }).catch(() => showToast('⚠️ Impossibile aggiornare l’evento'));
+      return;
+    }
+
     const payload = {
-      info: {
-        titolo,
-        data,
-        ora,
-        note,
-        chiuso: false,
-        updatedAt: serverTs()
-      },
+      info: infoPayload,
       partecipazioni: {},
       contributi: {}
     };
@@ -818,21 +852,9 @@
     const ref = eventiRef.push();
     ref.set(payload).then(() => {
       currentEventIdRef.set(ref.key);
-      closeNewEventEditor();
+      closeEventEditor();
       showToast('💾 Nuovo evento creato');
     });
-  });
-
-  document.getElementById('toggle-lock-btn').addEventListener('click', () => {
-    if (!hasConfiguredEvent()) {
-      showToast('⚠️ Seleziona prima un evento valido');
-      return;
-    }
-    const ref = currentEventRef();
-    if (!ref) return;
-    const next = !isLocked();
-    ref.child('info').child('chiuso').set(next);
-    showToast(next ? '🔒 Evento chiuso' : '🔓 Evento riaperto');
   });
 
   document.getElementById('rsvp-yes-btn').addEventListener('click', () => saveRsvp(RSVP_YES));
@@ -846,10 +868,6 @@
     }
     if (!hasConfiguredEvent()) {
       showToast('⚠️ Evento non ancora impostato');
-      return;
-    }
-    if (isLocked()) {
-      showToast('🔒 Evento chiuso: modifiche bloccate');
       return;
     }
     const ref = currentEventRef();
@@ -874,11 +892,6 @@
       showToast('⚠️ Evento non ancora impostato');
       return;
     }
-    if (isLocked()) {
-      showToast('🔒 Evento chiuso: modifiche bloccate');
-      return;
-    }
-
     const categoria = cleanString(itemCategory.value);
     const qty = cleanString(itemQty.value);
     const descrizione = cleanString(itemDesc.value);
@@ -976,27 +989,17 @@
     const ora = cleanString(info.ora);
     const note = cleanString(info.note);
 
-    const lockBtn = document.getElementById('toggle-lock-btn');
-    lockBtn.disabled = !hasConfiguredEvent();
-    if (isLocked()) {
-      lockBtn.textContent = '🔒 Evento chiuso';
-      lockBtn.classList.add('btn-primary');
-      lockBtn.classList.remove('btn-ghost');
-    } else {
-      lockBtn.textContent = '🔓 Evento aperto';
-      lockBtn.classList.add('btn-ghost');
-      lockBtn.classList.remove('btn-primary');
-    }
+    editEventBtn.disabled = !hasConfiguredEvent();
+    deleteEventBtn.disabled = !hasConfiguredEvent();
 
     if (!titolo || !data) {
       document.getElementById('event-preview').innerHTML = 'Nessun evento configurato.';
     } else {
-      const lockedChip = isLocked() ? '<span class="chip">🔒 Chiuso</span>' : '<span class="chip">🔓 Aperto</span>';
       const parts = [`📅 ${esc(data)}`];
       if (ora) parts.push(`🕒 ${esc(ora)}`);
       const eventiTxt = sortedEvents.length === 1 ? 'evento disponibile' : 'eventi disponibili';
       parts.push(`<span class="chip">📚 ${sortedEvents.length} ${eventiTxt}</span>`);
-      const meta = `${parts.join(' • ')} ${lockedChip}`;
+      const meta = parts.join(' • ');
       document.getElementById('event-preview').innerHTML = `
         <div class="event-title">${esc(titolo)}</div>
         <div class="event-meta">${meta}</div>
@@ -1069,7 +1072,7 @@
           const what = cleanString(v.descrizione);
           const whoAria = escAttrText(who);
           const qtyTxt = qty ? ` (${esc(qty)})` : '';
-          const canEdit = !isLocked() && isContributionOwnedByMe(v);
+          const canEdit = isContributionOwnedByMe(v);
           const actions = canEdit
             ? `<div class="contribution-actions">
                 <button class="btn-mini" data-action="edit" data-category="${esc(row.key)}" data-id="${esc(v.itemId)}" type="button" aria-label="Modifica contributo di ${whoAria}">Modifica</button>
