@@ -675,7 +675,7 @@
       if (!p) return;
       if (p.stato !== RSVP_YES && p.stato !== RSVP_NO) {
         const who = p.nome || 'Residente';
-        console.warn('Invalid RSVP status ignored for', `${who}:`, p.stato);
+        console.warn(`Invalid RSVP status ignored for ${who}: ${p.stato}`);
         return;
       }
       if (p.stato === RSVP_YES) {
