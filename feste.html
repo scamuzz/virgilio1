@@ -839,9 +839,9 @@
 
     if (editingEventId && eventiData[editingEventId]) {
       const infoRef = eventiRef.child(editingEventId).child('info');
-      const infoVal = eventiData[editingEventId] && eventiData[editingEventId].info ? eventiData[editingEventId].info : {};
+      const infoVal = eventiData[editingEventId].info || {};
       const ops = [infoRef.update(infoPayload)];
-      if (Object.prototype.hasOwnProperty.call(infoVal, 'chiuso')) ops.push(infoRef.child('chiuso').remove());
+      if (infoVal.hasOwnProperty('chiuso')) ops.push(infoRef.child('chiuso').remove());
       Promise.all(ops).then(() => {
         closeEventEditor();
         showToast('💾 Evento aggiornato');
