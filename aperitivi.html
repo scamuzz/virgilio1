@@ -310,7 +310,7 @@
 <div class="container">
   <div class="card">
     <div class="section-label">👤 Profilo residente</div>
-    <label class="label">Il tuo nome</label>
+    <label class="label" for="resident-name">Il tuo nome</label>
     <input id="resident-name" class="input" type="text" maxlength="30" placeholder="Es. Marco, Giulia…" autocomplete="off" spellcheck="false" />
     <div class="helper">Il nome viene salvato automaticamente su questo dispositivo.</div>
   </div>
@@ -319,15 +319,15 @@
     <div class="section-label">🗓️ Evento</div>
     <div class="grid-2" style="margin-bottom:10px;">
       <div>
-        <label class="label">Titolo evento</label>
+        <label class="label" for="event-title">Titolo evento</label>
         <input id="event-title" class="input" type="text" maxlength="80" placeholder="Es. Aperitivo in giardino" />
       </div>
       <div>
-        <label class="label">Data</label>
+        <label class="label" for="event-date">Data</label>
         <input id="event-date" class="input" type="date" />
       </div>
     </div>
-    <label class="label">Note (opzionale)</label>
+    <label class="label" for="event-note">Note (opzionale)</label>
     <textarea id="event-note" class="textarea" maxlength="500" placeholder="Orario, luogo, indicazioni..."></textarea>
 
     <div class="grid-2" style="margin-top:10px;">
@@ -355,15 +355,15 @@
     <div class="section-label">🍽️ Cosa porto</div>
     <div class="grid-2" style="margin-bottom:10px;">
       <div>
-        <label class="label">Categoria</label>
+        <label class="label" for="item-category">Categoria</label>
         <select id="item-category" class="select"></select>
       </div>
       <div>
-        <label class="label">Quantità</label>
+        <label class="label" for="item-qty">Quantità</label>
         <input id="item-qty" class="input" type="text" maxlength="20" placeholder="Es. 2 teglie" />
       </div>
     </div>
-    <label class="label">Descrizione</label>
+    <label class="label" for="item-desc">Descrizione</label>
     <input id="item-desc" class="input" type="text" maxlength="80" placeholder="Es. Pizza margherita, Coca-Cola 1.5L..." />
     <button id="save-item-btn" class="btn btn-primary" style="width:100%; margin-top:10px;">➕ Salva contributo</button>
     <div class="helper">Ogni residente mantiene un solo contributo per categoria (aggiornabile).</div>
@@ -459,7 +459,7 @@
     const forbidden = new Set(['.', '#', '$', '[', ']', '/']);
     const safe = Array.from(raw).filter(ch => !forbidden.has(ch)).join('');
     if (safe) return safe;
-    return `utente_${encodeURIComponent(raw).replace(/%/g, '_')}`;
+    return `utente_${encodeURIComponent(currentName).replace(/%/g, '_')}`;
   }
 
   function serverTs() {
@@ -674,7 +674,7 @@
     Object.values(parte).forEach(p => {
       if (!p) return;
       if (p.stato !== RSVP_YES && p.stato !== RSVP_NO) {
-        const who = p.nome || 'unknown';
+        const who = p.nome || 'Residente';
         console.warn(`Invalid RSVP status ignored for ${who}:`, p.stato);
         return;
       }
