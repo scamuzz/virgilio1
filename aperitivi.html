@@ -450,10 +450,16 @@
   }
 
   function myKey() {
-    return myName()
-      .toLowerCase()
-      .replace(/\s+/g, '_')
-      .replace(/[.#$[\]/]/g, '');
+    const raw = myName().toLowerCase().replace(/\s+/g, '_');
+    const safe = raw.replace(/[.#$/\[\]]/g, '');
+    if (safe) return safe;
+
+    let hash = 0;
+    for (let i = 0; i < raw.length; i += 1) {
+      hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+      hash |= 0;
+    }
+    return `utente_${Math.abs(hash)}`;
   }
 
   function serverTs() {
@@ -666,11 +672,11 @@
     let countNo = 0;
     const yesNames = [];
     Object.values(parte).forEach(p => {
-      if (!p || !p.stato) return;
+      if (!p || (p.stato !== 'si' && p.stato !== 'no')) return;
       if (p.stato === 'si') {
         countYes += 1;
         if (p.nome) yesNames.push(p.nome);
-      } else if (p.stato === 'no') {
+      } else {
         countNo += 1;
       }
     });
