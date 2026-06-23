@@ -734,9 +734,8 @@
       currentEventId = '';
       return currentEventIdRef.set(null);
     }).then(() => {
-      const wasEditingDeletedEvent = editingEventId === deletedEventId;
-      editingEventId = '';
-      if (wasEditingDeletedEvent) closeEventEditor();
+      if (editingEventId === deletedEventId) closeEventEditor();
+      else editingEventId = '';
       showToast('🗑️ Evento cancellato');
     }).catch(() => showToast('⚠️ Impossibile cancellare l’evento'));
   });
