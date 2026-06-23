@@ -173,6 +173,19 @@
       white-space: pre-wrap;
       line-height: 1.5;
     }
+    .event-switch-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+    .event-switch-row .event-selector-wrap {
+      flex: 1;
+    }
+    .hidden {
+      display: none;
+    }
 
     .summary-grid {
       display: grid;
@@ -242,6 +255,40 @@
       gap: 3px;
       font-size: 0.72rem;
       color: #5d4a56;
+    }
+    .contribution-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: flex-start;
+      border-bottom: 1px dashed #ffe4ef;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+    .contribution-row:last-child {
+      border-bottom: 0;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .contribution-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .btn-mini {
+      border: 1px solid #ffd1e3;
+      background: #fff5f9;
+      color: #ad1457;
+      border-radius: 8px;
+      padding: 3px 6px;
+      font-size: 0.64rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-mini.btn-danger {
+      border-color: #f4b4c8;
+      color: #b71c1c;
+      background: #fff2f2;
     }
 
     .chip {
@@ -323,6 +370,14 @@
   <div class="card" id="event-preview-card">
     <div class="section-label">📌 Evento attuale</div>
     <div id="event-preview" class="empty">Nessun evento configurato.</div>
+    <div class="event-switch-row">
+      <div class="event-selector-wrap">
+        <label class="label" for="event-selector">Seleziona evento</label>
+        <select id="event-selector" class="select"></select>
+      </div>
+      <button id="toggle-lock-btn" class="btn btn-ghost" type="button">🔓 Evento aperto</button>
+      <button id="show-event-editor-btn" class="btn btn-primary" type="button">➕</button>
+    </div>
   </div>
 
   <div class="card">
@@ -342,13 +397,14 @@
         <select id="item-category" class="select"></select>
       </div>
       <div>
-        <label class="label" for="item-qty">Quantità</label>
-        <input id="item-qty" class="input" type="text" maxlength="20" placeholder="Es. 2 teglie" />
+        <label class="label" for="item-desc">Descrizione</label>
+        <input id="item-desc" class="input" type="text" maxlength="80" placeholder="Es. Pizza margherita, Coca-Cola 1.5L..." />
       </div>
     </div>
-    <label class="label" for="item-desc">Descrizione</label>
-    <input id="item-desc" class="input" type="text" maxlength="80" placeholder="Es. Pizza margherita, Coca-Cola 1.5L..." />
+    <label class="label" for="item-qty">Quantità (opzionale)</label>
+    <input id="item-qty" class="input" type="text" maxlength="20" placeholder="Es. 2 teglie" aria-required="false" />
     <button id="save-item-btn" class="btn btn-primary" style="width:100%; margin-top:10px;">➕ Salva contributo</button>
+    <button id="cancel-edit-item-btn" class="btn btn-ghost hidden" style="width:100%; margin-top:8px;" type="button">↩️ Annulla modifica</button>
     <div class="helper">Ogni residente può salvare più contributi, anche nella stessa categoria.</div>
   </div>
 
@@ -372,7 +428,7 @@
     <div id="categories-summary" class="cat-list"></div>
   </div>
 
-  <div class="card">
+  <div class="card hidden" id="event-editor-card">
     <div class="section-label">🗓️ Evento</div>
     <div class="event-grid" style="margin-bottom:10px;">
       <div>
@@ -391,10 +447,7 @@
     <label class="label" for="event-note">Note (opzionale)</label>
     <textarea id="event-note" class="textarea" maxlength="500" placeholder="Orario, luogo, indicazioni..."></textarea>
 
-    <div class="grid-2" style="margin-top:10px;">
-      <button id="save-event-btn" class="btn btn-primary">💾 Salva evento</button>
-      <button id="toggle-lock-btn" class="btn btn-ghost">🔓 Evento aperto</button>
-    </div>
+    <button id="save-event-btn" class="btn btn-primary" style="width:100%; margin-top:10px;">💾 Salva evento</button>
     <div class="helper">Quando l'evento è chiuso, RSVP e contributi vengono bloccati.</div>
   </div>
 </div>
@@ -417,7 +470,10 @@
   });
 
   const db = firebase.database();
-  const eventiRef = db.ref('feste/eventoCorrente');
+  const festeRef = db.ref('feste');
+  const eventiRef = festeRef.child('eventi');
+  const currentEventIdRef = festeRef.child('eventoCorrenteId');
+  const legacyEventRef = festeRef.child('eventoCorrente');
   const RSVP_YES = 'si';
   const RSVP_NO = 'no';
 
@@ -434,9 +490,15 @@
     { key: 'altro', label: 'Altro' }
   ];
 
-  let eventData = { info: {}, partecipazioni: {}, contributi: {} };
+  let eventiData = {};
+  let currentEventId = '';
+  let editingContribution = null;
+  let legacyMigrationChecked = false;
 
   const nameInput = document.getElementById('resident-name');
+  const eventSelector = document.getElementById('event-selector');
+  const showEventEditorBtn = document.getElementById('show-event-editor-btn');
+  const eventEditorCard = document.getElementById('event-editor-card');
   const eventTitleInput = document.getElementById('event-title');
   const eventDateInput = document.getElementById('event-date');
   const eventTimeInput = document.getElementById('event-time');
@@ -444,6 +506,9 @@
   const itemCategory = document.getElementById('item-category');
   const itemQty = document.getElementById('item-qty');
   const itemDesc = document.getElementById('item-desc');
+  const saveItemBtn = document.getElementById('save-item-btn');
+  const cancelEditItemBtn = document.getElementById('cancel-edit-item-btn');
+  const categoriesSummaryEl = document.getElementById('categories-summary');
 
   function cleanString(str) {
     return String(str || '').trim().replace(/\s+/g, ' ');
@@ -476,11 +541,6 @@
     return firebase.database.ServerValue.TIMESTAMP;
   }
 
-  function categoryLabel(key) {
-    const found = CATEGORIES.find(c => c.key === key);
-    return found ? found.label : key;
-  }
-
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -488,12 +548,79 @@
     setTimeout(() => t.classList.remove('show'), 2600);
   }
 
+  function getSortedEventEntries() {
+    return Object.entries(eventiData).sort((a, b) => {
+      const aInfo = a[1] && a[1].info ? a[1].info : {};
+      const bInfo = b[1] && b[1].info ? b[1].info : {};
+      const byDate = cleanString(bInfo.data).localeCompare(cleanString(aInfo.data), 'it');
+      if (byDate) return byDate;
+      return cleanString(aInfo.titolo).localeCompare(cleanString(bInfo.titolo), 'it');
+    });
+  }
+
+  function currentEvent() {
+    if (!currentEventId) return null;
+    return eventiData[currentEventId] || null;
+  }
+
+  function currentInfo() {
+    const evt = currentEvent();
+    return evt && evt.info ? evt.info : {};
+  }
+
   function isLocked() {
-    return !!(eventData.info && eventData.info.chiuso);
+    const info = currentInfo();
+    return !!info.chiuso;
   }
 
   function hasConfiguredEvent() {
-    return !!(cleanString(eventData.info.titolo) && cleanString(eventData.info.data));
+    const info = currentInfo();
+    return !!(cleanString(info.titolo) && cleanString(info.data));
+  }
+
+  function currentEventRef() {
+    if (!currentEventId) return null;
+    return eventiRef.child(currentEventId);
+  }
+
+  function eventLabel(info) {
+    const titolo = cleanString(info.titolo) || 'Evento senza titolo';
+    const data = cleanString(info.data) || 'Senza data';
+    return `${data} • ${titolo}`;
+  }
+
+  function resetItemEditor() {
+    editingContribution = null;
+    itemQty.value = '';
+    itemDesc.value = '';
+    saveItemBtn.textContent = '➕ Salva contributo';
+    cancelEditItemBtn.classList.add('hidden');
+  }
+
+  function openNewEventEditor() {
+    eventEditorCard.classList.remove('hidden');
+    eventTitleInput.value = '';
+    eventDateInput.value = '';
+    eventTimeInput.value = '';
+    eventNoteInput.value = '';
+    eventTitleInput.focus();
+  }
+
+  function closeNewEventEditor() {
+    eventEditorCard.classList.add('hidden');
+  }
+
+  function selectFallbackEvent() {
+    const sorted = getSortedEventEntries();
+    const fallbackId = sorted.length ? sorted[0][0] : '';
+    if (!fallbackId) {
+      if (currentEventId) currentEventIdRef.set(null);
+      currentEventId = '';
+      return;
+    }
+    if (currentEventId !== fallbackId) {
+      currentEventIdRef.set(fallbackId);
+    }
   }
 
   CATEGORIES.forEach(cat => {
@@ -509,6 +636,70 @@
     render();
   });
 
+  eventSelector.addEventListener('change', () => {
+    const next = cleanString(eventSelector.value);
+    currentEventIdRef.set(next || null);
+  });
+
+  showEventEditorBtn.addEventListener('click', () => {
+    if (!eventEditorCard.classList.contains('hidden')) {
+      closeNewEventEditor();
+      return;
+    }
+    openNewEventEditor();
+  });
+
+  cancelEditItemBtn.addEventListener('click', () => {
+    resetItemEditor();
+  });
+
+  categoriesSummaryEl.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const categoria = cleanString(btn.dataset.category);
+    const itemId = cleanString(btn.dataset.id);
+    if (!categoria || !itemId) return;
+
+    const evt = currentEvent();
+    const raw = evt && evt.contributi && evt.contributi[categoria] ? evt.contributi[categoria][itemId] : null;
+    if (!raw) {
+      showToast('⚠️ Contributo non trovato');
+      return;
+    }
+    if (cleanString(raw.ownerKey) !== myKey()) {
+      showToast('⛔ Puoi modificare solo i tuoi contributi');
+      return;
+    }
+    if (isLocked()) {
+      showToast('🔒 Evento chiuso: modifiche bloccate');
+      return;
+    }
+
+    if (action === 'edit') {
+      editingContribution = { categoria, itemId };
+      itemCategory.value = categoria;
+      itemDesc.value = cleanString(raw.descrizione);
+      itemQty.value = cleanString(raw.qty);
+      saveItemBtn.textContent = '💾 Aggiorna contributo';
+      cancelEditItemBtn.classList.remove('hidden');
+      itemDesc.focus();
+      return;
+    }
+
+    if (action === 'delete') {
+      const confirmed = window.confirm('Vuoi cancellare questo contributo?');
+      if (!confirmed) return;
+      const ref = currentEventRef();
+      if (!ref) return;
+      ref.child('contributi').child(categoria).child(itemId).remove();
+      if (editingContribution && editingContribution.categoria === categoria && editingContribution.itemId === itemId) {
+        resetItemEditor();
+      }
+      showToast('🗑️ Contributo eliminato');
+    }
+  });
+
   db.ref('.info/connected').on('value', snap => {
     const dot = document.getElementById('sync-dot');
     const lbl = document.getElementById('sync-label');
@@ -522,12 +713,27 @@
   });
 
   eventiRef.on('value', snap => {
-    const val = snap.val() || {};
-    eventData = {
-      info: val.info || {},
-      partecipazioni: val.partecipazioni || {},
-      contributi: val.contributi || {}
-    };
+    eventiData = snap.val() || {};
+    if (!legacyMigrationChecked && !Object.keys(eventiData).length) {
+      legacyMigrationChecked = true;
+      legacyEventRef.once('value').then(oldSnap => {
+        const legacy = oldSnap.val();
+        const hasLegacy = legacy && legacy.info && cleanString(legacy.info.titolo) && cleanString(legacy.info.data);
+        if (!hasLegacy) return;
+        const newRef = eventiRef.push();
+        newRef.set(legacy).then(() => {
+          currentEventIdRef.set(newRef.key);
+          legacyEventRef.remove();
+        });
+      });
+    }
+    if (!eventiData[currentEventId]) selectFallbackEvent();
+    render();
+  });
+
+  currentEventIdRef.on('value', snap => {
+    currentEventId = cleanString(snap.val());
+    if (!eventiData[currentEventId]) selectFallbackEvent();
     render();
   });
 
@@ -547,27 +753,37 @@
       showToast('⚠️ Inserisci la data evento');
       return;
     }
-    const current = eventData.info || {};
+
     const payload = {
-      titolo,
-      data,
-      ora,
-      note,
-      chiuso: !!current.chiuso,
-      updatedAt: serverTs()
+      info: {
+        titolo,
+        data,
+        ora,
+        note,
+        chiuso: false,
+        updatedAt: serverTs()
+      },
+      partecipazioni: {},
+      contributi: {}
     };
 
-    eventiRef.child('info').set(payload);
-    showToast('💾 Evento salvato');
+    const ref = eventiRef.push();
+    ref.set(payload).then(() => {
+      currentEventIdRef.set(ref.key);
+      closeNewEventEditor();
+      showToast('💾 Nuovo evento creato');
+    });
   });
 
   document.getElementById('toggle-lock-btn').addEventListener('click', () => {
     if (!hasConfiguredEvent()) {
-      showToast('⚠️ Configura prima titolo e data evento');
+      showToast('⚠️ Seleziona prima un evento valido');
       return;
     }
+    const ref = currentEventRef();
+    if (!ref) return;
     const next = !isLocked();
-    eventiRef.child('info').child('chiuso').set(next);
+    ref.child('info').child('chiuso').set(next);
     showToast(next ? '🔒 Evento chiuso' : '🔓 Evento riaperto');
   });
 
@@ -588,8 +804,10 @@
       showToast('🔒 Evento chiuso: modifiche bloccate');
       return;
     }
+    const ref = currentEventRef();
+    if (!ref) return;
 
-    eventiRef
+    ref
       .child('partecipazioni')
       .child(myKey())
       .set({ nome: myName(), stato, updatedAt: serverTs() });
@@ -597,7 +815,7 @@
     showToast(stato === RSVP_YES ? '✅ Partecipazione confermata' : '❌ Non partecipazione registrata');
   }
 
-  document.getElementById('save-item-btn').addEventListener('click', () => {
+  saveItemBtn.addEventListener('click', () => {
     if (!myName()) {
       nameInput.focus();
       showToast('⚠️ Inserisci prima il tuo nome');
@@ -626,25 +844,70 @@
       return;
     }
 
-    eventiRef
+    const ref = currentEventRef();
+    if (!ref) return;
+
+    if (editingContribution) {
+      const prev = editingContribution;
+      const sameCategory = prev.categoria === categoria;
+      const oldRef = ref.child('contributi').child(prev.categoria).child(prev.itemId);
+      const targetRef = ref.child('contributi').child(categoria).child(prev.itemId);
+      const payload = {
+        nome: myName(),
+        ownerKey: myKey(),
+        qty,
+        descrizione,
+        updatedAt: serverTs()
+      };
+      if (sameCategory) {
+        targetRef.update(payload);
+      } else {
+        oldRef.remove().then(() => targetRef.set(payload));
+      }
+      resetItemEditor();
+      showToast('💾 Contributo aggiornato');
+      return;
+    }
+
+    ref
       .child('contributi')
       .child(categoria)
       .push({
         nome: myName(),
+        ownerKey: myKey(),
         qty,
         descrizione,
         updatedAt: serverTs()
       });
 
-    itemQty.value = '';
-    itemDesc.value = '';
+    resetItemEditor();
     showToast('🍽️ Contributo salvato');
   });
 
   function render() {
-    const info = eventData.info || {};
-    const parte = eventData.partecipazioni || {};
-    const contributi = eventData.contributi || {};
+    const evt = currentEvent();
+    const info = evt && evt.info ? evt.info : {};
+    const parte = evt && evt.partecipazioni ? evt.partecipazioni : {};
+    const contributi = evt && evt.contributi ? evt.contributi : {};
+
+    const sortedEvents = getSortedEventEntries();
+    eventSelector.innerHTML = '';
+    if (!sortedEvents.length) {
+      const emptyOpt = document.createElement('option');
+      emptyOpt.value = '';
+      emptyOpt.textContent = 'Nessun evento disponibile';
+      eventSelector.appendChild(emptyOpt);
+      eventSelector.disabled = true;
+    } else {
+      eventSelector.disabled = false;
+      sortedEvents.forEach(([id, eventVal], idx) => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = `${idx + 1}. ${eventLabel(eventVal.info || {})}`;
+        eventSelector.appendChild(opt);
+      });
+      eventSelector.value = currentEventId && eventiData[currentEventId] ? currentEventId : sortedEvents[0][0];
+    }
 
     const titolo = cleanString(info.titolo);
     const data = cleanString(info.data);
@@ -652,6 +915,7 @@
     const note = cleanString(info.note);
 
     const lockBtn = document.getElementById('toggle-lock-btn');
+    lockBtn.disabled = !hasConfiguredEvent();
     if (isLocked()) {
       lockBtn.textContent = '🔒 Evento chiuso';
       lockBtn.classList.add('btn-primary');
@@ -666,9 +930,9 @@
       document.getElementById('event-preview').innerHTML = 'Nessun evento configurato.';
     } else {
       const lockedChip = isLocked() ? '<span class="chip">🔒 Chiuso</span>' : '<span class="chip">🔓 Aperto</span>';
-      const dataTxt = esc(data);
-      const parts = [`📅 ${dataTxt}`];
+      const parts = [`📅 ${esc(data)}`];
       if (ora) parts.push(`🕒 ${esc(ora)}`);
+      parts.push(`<span class="chip">${sortedEvents.length} eventi totali</span>`);
       const meta = `${parts.join(' • ')} ${lockedChip}`;
       document.getElementById('event-preview').innerHTML = `
         <div class="event-title">${esc(titolo)}</div>
@@ -688,11 +952,7 @@
     const yesNames = [];
     Object.values(parte).forEach(p => {
       if (!p) return;
-      if (p.stato !== RSVP_YES && p.stato !== RSVP_NO) {
-        const who = p.nome || 'Residente';
-        console.warn(`Stato RSVP non valido ignorato per ${who}: ${p.stato}`);
-        return;
-      }
+      if (p.stato !== RSVP_YES && p.stato !== RSVP_NO) return;
       if (p.stato === RSVP_YES) {
         countYes += 1;
         if (p.nome) yesNames.push(p.nome);
@@ -712,7 +972,7 @@
     CATEGORIES.forEach(cat => {
       const entries = Object.entries(contributi[cat.key] || {});
       const valid = entries
-        .map(([, v]) => v)
+        .map(([id, v]) => ({ id, ...v }))
         .filter(v => v && cleanString(v.descrizione));
 
       summaryRows.push({
@@ -728,14 +988,13 @@
       return a.label.localeCompare(b.label, 'it');
     });
 
-    const summaryEl = document.getElementById('categories-summary');
     const nonEmptyRows = summaryRows.filter(r => r.total > 0);
     if (!nonEmptyRows.length) {
-      summaryEl.innerHTML = '<div class="empty">Nessun contributo registrato al momento.</div>';
+      categoriesSummaryEl.innerHTML = '<div class="empty">Nessun contributo registrato al momento.</div>';
       return;
     }
 
-    summaryEl.innerHTML = nonEmptyRows.map(row => {
+    categoriesSummaryEl.innerHTML = nonEmptyRows.map(row => {
       const details = row.entries
         .sort((a, b) => cleanString(a.nome).localeCompare(cleanString(b.nome), 'it'))
         .map(v => {
@@ -743,7 +1002,19 @@
           const qty = cleanString(v.qty);
           const what = cleanString(v.descrizione);
           const qtyTxt = qty ? ` (${esc(qty)})` : '';
-          return `<div><strong>${esc(who)}</strong>${qtyTxt}: ${esc(what)}</div>`;
+          const canEdit = !isLocked() && !!myKey() && cleanString(v.ownerKey) === myKey();
+          const actions = canEdit
+            ? `<div class="contribution-actions">
+                <button class="btn-mini" data-action="edit" data-category="${esc(row.key)}" data-id="${esc(v.id)}" type="button">Modifica</button>
+                <button class="btn-mini btn-danger" data-action="delete" data-category="${esc(row.key)}" data-id="${esc(v.id)}" type="button">Cancella</button>
+              </div>`
+            : '';
+          return `
+            <div class="contribution-row">
+              <div><strong>${esc(who)}</strong>${qtyTxt}: ${esc(what)}</div>
+              ${actions}
+            </div>
+          `;
         })
         .join('');
 
