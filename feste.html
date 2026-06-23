@@ -522,6 +522,13 @@
       .replace(/"/g, '&quot;');
   }
 
+  function escAttrText(s) {
+    return String(s)
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   function myName() {
     return cleanString(nameInput.value);
   }
@@ -726,7 +733,9 @@
       if (!confirmed) return;
       const ref = currentEventRef();
       if (!ref) return;
-      ref.child('contributi').child(categoria).child(itemId).remove();
+      ref.child('contributi').child(categoria).child(itemId).remove().catch(() => {
+        showToast('⚠️ Impossibile cancellare il contributo');
+      });
       if (editingContribution && editingContribution.categoria === categoria && editingContribution.itemId === itemId) {
         resetItemEditor();
       }
@@ -833,7 +842,8 @@
     ref
       .child('partecipazioni')
       .child(myKey())
-      .set({ nome: myName(), stato, updatedAt: serverTs() });
+      .set({ nome: myName(), stato, updatedAt: serverTs() })
+      .catch(() => showToast('⚠️ Impossibile salvare la partecipazione'));
 
     showToast(stato === RSVP_YES ? '✅ Partecipazione confermata' : '❌ Non partecipazione registrata');
   }
@@ -877,10 +887,6 @@
     if (editingContribution) {
       const prev = editingContribution;
       const sameCategory = prev.categoria === categoria;
-      if (!isSafeFirebaseSegment(prev.categoria)) {
-        showToast('⚠️ Categoria non valida');
-        return;
-      }
       const payload = {
         nome: myName(),
         ownerKey: myKey(),
@@ -890,17 +896,17 @@
       };
       if (sameCategory) {
         const targetRef = ref.child('contributi').child(categoria).child(prev.itemId);
-        targetRef.update(payload);
+        targetRef.update(payload).catch(() => {
+          showToast('⚠️ Impossibile aggiornare il contributo');
+        });
       } else {
         const movedId = ref.child('contributi').child(categoria).push().key;
-        if (!movedId) {
-          showToast('⚠️ Impossibile spostare il contributo');
-          return;
-        }
         const updates = {};
         updates[`${categoria}/${movedId}`] = payload;
         updates[`${prev.categoria}/${prev.itemId}`] = null;
-        ref.child('contributi').update(updates);
+        ref.child('contributi').update(updates).catch(() => {
+          showToast('⚠️ Impossibile spostare il contributo');
+        });
       }
       resetItemEditor();
       showToast('💾 Contributo aggiornato');
@@ -916,7 +922,8 @@
         qty,
         descrizione,
         updatedAt: serverTs()
-      });
+      })
+      .catch(() => showToast('⚠️ Impossibile salvare il contributo'));
 
     resetItemEditor();
     showToast('🍽️ Contributo salvato');
@@ -1044,12 +1051,13 @@
           const who = cleanString(v.nome) || 'Residente';
           const qty = cleanString(v.qty);
           const what = cleanString(v.descrizione);
+          const whoAria = escAttrText(who);
           const qtyTxt = qty ? ` (${esc(qty)})` : '';
           const canEdit = !isLocked() && !!myKey() && cleanString(v.ownerKey) === myKey();
           const actions = canEdit
             ? `<div class="contribution-actions">
-                <button class="btn-mini" data-action="edit" data-category="${esc(row.key)}" data-id="${esc(v.itemId)}" type="button" aria-label="Modifica contributo di ${esc(who)}">Modifica</button>
-                <button class="btn-mini btn-danger" data-action="delete" data-category="${esc(row.key)}" data-id="${esc(v.itemId)}" type="button" aria-label="Cancella contributo di ${esc(who)}">Cancella</button>
+                <button class="btn-mini" data-action="edit" data-category="${esc(row.key)}" data-id="${esc(v.itemId)}" type="button" aria-label="Modifica contributo di ${whoAria}">Modifica</button>
+                <button class="btn-mini btn-danger" data-action="delete" data-category="${esc(row.key)}" data-id="${esc(v.itemId)}" type="button" aria-label="Cancella contributo di ${whoAria}">Cancella</button>
               </div>`
             : '';
           return `
