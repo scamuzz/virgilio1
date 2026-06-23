@@ -727,10 +727,15 @@
     }
     const confirmed = window.confirm('Vuoi cancellare questo evento? Verranno rimossi anche partecipazioni e contributi.');
     if (!confirmed) return;
+    const deletedEventId = currentEventId;
     const ref = currentEventRef();
     if (!ref) return;
     ref.remove().then(() => {
-      if (editingEventId === currentEventId) closeEventEditor();
+      if (deletedEventId) {
+        currentEventId = '';
+        currentEventIdRef.set(null);
+      }
+      if (editingEventId === deletedEventId) closeEventEditor();
       showToast('🗑️ Evento cancellato');
     }).catch(() => showToast('⚠️ Impossibile cancellare l’evento'));
   });
@@ -835,7 +840,11 @@
     };
 
     if (editingEventId && eventiData[editingEventId]) {
-      eventiRef.child(editingEventId).child('info').update({ ...infoPayload, chiuso: null }).then(() => {
+      const infoRef = eventiRef.child(editingEventId).child('info');
+      Promise.all([
+        infoRef.update(infoPayload),
+        infoRef.child('chiuso').remove()
+      ]).then(() => {
         closeEventEditor();
         showToast('💾 Evento aggiornato');
       }).catch(() => showToast('⚠️ Impossibile aggiornare l’evento'));
