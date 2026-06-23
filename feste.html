@@ -296,7 +296,7 @@
 
 <div class="header">
   <a class="back-link" href="index.html">&#8592; Home</a>
-  <span class="icons">🍷🍷</span>
+  <span class="icons" role="img" aria-label="Aperitivi e Feste">🍷🍷</span>
   <h1>Aperitivi e Feste</h1>
   <div class="subtitle">Organizza eventi e coordina i contributi dei residenti</div>
   <div class="sync-status">
@@ -674,7 +674,9 @@
     } else {
       const lockedChip = isLocked() ? '<span class="chip">🔒 Chiuso</span>' : '<span class="chip">🔓 Aperto</span>';
       const dataTxt = data ? esc(data) : 'Data da definire';
-      const meta = ora ? `📅 ${dataTxt} • 🕒 ${esc(ora)} ${lockedChip}` : `📅 ${dataTxt} ${lockedChip}`;
+      const parts = [`📅 ${dataTxt}`];
+      if (ora) parts.push(`🕒 ${esc(ora)}`);
+      const meta = `${parts.join(' • ')} ${lockedChip}`;
       document.getElementById('event-preview').innerHTML = `
         <div class="event-title">${esc(titolo)}</div>
         <div class="event-meta">${meta}</div>
