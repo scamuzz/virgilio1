@@ -129,6 +129,10 @@
       box-shadow: 0 4px 12px rgba(173,20,87,0.25);
     }
     .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-new-event {
+      width: 100%;
+      margin-top: 10px;
+    }
 
     .btn-ghost {
       background: #fff5f9;
@@ -365,7 +369,7 @@
     <label class="label" for="resident-name">Il tuo nome</label>
     <input id="resident-name" class="input" type="text" maxlength="30" placeholder="Es. Marco, Giulia…" autocomplete="off" spellcheck="false" />
     <div class="helper">Il nome viene salvato automaticamente su questo dispositivo.</div>
-    <button id="show-event-editor-btn" class="btn btn-primary" style="width:100%; margin-top:10px;" type="button">➕ Nuovo evento</button>
+    <button id="show-event-editor-btn" class="btn btn-primary btn-new-event" type="button">➕ Nuovo evento</button>
   </div>
 
   <div class="card" id="event-preview-card">
@@ -550,7 +554,10 @@
     if (!mine) return false;
     const ownerKey = cleanString(contribution.ownerKey);
     if (ownerKey) return ownerKey === mine;
-    return cleanString(contribution.nome).toLowerCase() === myName().toLowerCase();
+    const contributionName = cleanString(contribution.nome);
+    const currentName = myName();
+    if (!contributionName || !currentName) return false;
+    return contributionName.toLowerCase() === currentName.toLowerCase();
   }
 
   function serverTs() {
