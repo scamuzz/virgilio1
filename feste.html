@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>🎉 Feste Condominiali — Virgilio 1</title>
+  <title>🍷🍷 Aperitivi e Feste — Virgilio 1</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; overflow-x: hidden; }
@@ -291,8 +291,8 @@
 
 <div class="header">
   <a class="back-link" href="index.html">&#8592; Home</a>
-  <span class="icons">🎉</span>
-  <h1>Feste Condominiali</h1>
+  <span class="icons">🍷🍷</span>
+  <h1>Aperitivi e Feste</h1>
   <div class="subtitle">Organizza eventi e coordina i contributi dei residenti</div>
   <div class="sync-status">
     <div class="sync-dot" id="sync-dot"></div>
@@ -317,7 +317,7 @@
 
   <div class="card">
     <div class="section-label">🗓️ Evento</div>
-    <div class="grid-2" style="margin-bottom:10px;">
+    <div class="grid-2" style="margin-bottom:10px; grid-template-columns:1.3fr 1fr 1fr;">
       <div>
         <label class="label" for="event-title">Titolo evento</label>
         <input id="event-title" class="input" type="text" maxlength="80" placeholder="Es. Aperitivo in giardino" />
@@ -325,6 +325,10 @@
       <div>
         <label class="label" for="event-date">Data</label>
         <input id="event-date" class="input" type="date" />
+      </div>
+      <div>
+        <label class="label" for="event-time">Ora</label>
+        <input id="event-time" class="input" type="time" />
       </div>
     </div>
     <label class="label" for="event-note">Note (opzionale)</label>
@@ -430,6 +434,7 @@
   const nameInput = document.getElementById('resident-name');
   const eventTitleInput = document.getElementById('event-title');
   const eventDateInput = document.getElementById('event-date');
+  const eventTimeInput = document.getElementById('event-time');
   const eventNoteInput = document.getElementById('event-note');
   const itemCategory = document.getElementById('item-category');
   const itemQty = document.getElementById('item-qty');
@@ -524,6 +529,7 @@
   document.getElementById('save-event-btn').addEventListener('click', () => {
     const titolo = cleanString(eventTitleInput.value);
     const data = cleanString(eventDateInput.value);
+    const ora = cleanString(eventTimeInput.value);
     const note = cleanString(eventNoteInput.value);
 
     if (!titolo) {
@@ -536,11 +542,17 @@
       showToast('⚠️ Inserisci la data evento');
       return;
     }
+    if (!ora) {
+      eventTimeInput.focus();
+      showToast('⚠️ Inserisci l’ora evento');
+      return;
+    }
 
     const current = eventData.info || {};
     const payload = {
       titolo,
       data,
+      ora,
       note,
       chiuso: !!current.chiuso,
       updatedAt: serverTs()
@@ -638,6 +650,7 @@
 
     const titolo = cleanString(info.titolo);
     const data = cleanString(info.data);
+    const ora = cleanString(info.ora);
     const note = cleanString(info.note);
 
     const lockBtn = document.getElementById('toggle-lock-btn');
@@ -655,9 +668,10 @@
       document.getElementById('event-preview').innerHTML = 'Nessun evento configurato.';
     } else {
       const lockedChip = isLocked() ? '<span class="chip">🔒 Chiuso</span>' : '<span class="chip">🔓 Aperto</span>';
+      const meta = ora ? `📅 ${esc(data)} • 🕒 ${esc(ora)} ${lockedChip}` : `📅 ${esc(data)} ${lockedChip}`;
       document.getElementById('event-preview').innerHTML = `
         <div class="event-title">${esc(titolo)}</div>
-        <div class="event-meta">📅 ${esc(data)} ${lockedChip}</div>
+        <div class="event-meta">${meta}</div>
         <div class="event-note">${note ? esc(note) : 'Nessuna nota aggiuntiva.'}</div>
       `;
     }
