@@ -409,6 +409,8 @@
 
   const db = firebase.database();
   const eventiRef = db.ref('aperitivi/eventoCorrente');
+  const RSVP_YES = 'si';
+  const RSVP_NO = 'no';
 
   const CATEGORIES = [
     { key: 'pizze_focacce', label: 'Pizze / Focacce' },
@@ -450,7 +452,10 @@
   }
 
   function myKey() {
-    const raw = myName().toLowerCase().replace(/\s+/g, '_');
+    const currentName = myName();
+    if (!currentName) return '';
+
+    const raw = currentName.toLowerCase().replace(/\s+/g, '_');
     const safe = raw.replace(/[.#$/\[\]]/g, '');
     if (safe) return safe;
 
@@ -560,8 +565,8 @@
     showToast(next ? '🔒 Evento chiuso' : '🔓 Evento riaperto');
   });
 
-  document.getElementById('rsvp-yes-btn').addEventListener('click', () => saveRsvp('si'));
-  document.getElementById('rsvp-no-btn').addEventListener('click', () => saveRsvp('no'));
+  document.getElementById('rsvp-yes-btn').addEventListener('click', () => saveRsvp(RSVP_YES));
+  document.getElementById('rsvp-no-btn').addEventListener('click', () => saveRsvp(RSVP_NO));
 
   function saveRsvp(stato) {
     if (!myName()) {
@@ -583,7 +588,7 @@
       .child(myKey())
       .set({ nome: myName(), stato, updatedAt: serverTs() });
 
-    showToast(stato === 'si' ? '✅ Partecipazione confermata' : '❌ Non partecipazione registrata');
+    showToast(stato === RSVP_YES ? '✅ Partecipazione confermata' : '❌ Non partecipazione registrata');
   }
 
   document.getElementById('save-item-btn').addEventListener('click', () => {
@@ -665,15 +670,15 @@
     const my = myKey() ? parte[myKey()] : null;
     const yesBtn = document.getElementById('rsvp-yes-btn');
     const noBtn = document.getElementById('rsvp-no-btn');
-    yesBtn.classList.toggle('active', !!(my && my.stato === 'si'));
-    noBtn.classList.toggle('active', !!(my && my.stato === 'no'));
+    yesBtn.classList.toggle('active', !!(my && my.stato === RSVP_YES));
+    noBtn.classList.toggle('active', !!(my && my.stato === RSVP_NO));
 
     let countYes = 0;
     let countNo = 0;
     const yesNames = [];
     Object.values(parte).forEach(p => {
-      if (!p || (p.stato !== 'si' && p.stato !== 'no')) return;
-      if (p.stato === 'si') {
+      if (!p || (p.stato !== RSVP_YES && p.stato !== RSVP_NO)) return;
+      if (p.stato === RSVP_YES) {
         countYes += 1;
         if (p.nome) yesNames.push(p.nome);
       } else {
