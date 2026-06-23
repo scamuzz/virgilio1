@@ -114,7 +114,7 @@
     }
     .event-grid {
       display: grid;
-      grid-template-columns: 1.3fr 1fr 1fr;
+      grid-template-columns: 4fr 3fr 3fr;
       gap: 10px;
     }
 
@@ -673,7 +673,8 @@
       document.getElementById('event-preview').innerHTML = 'Nessun evento configurato.';
     } else {
       const lockedChip = isLocked() ? '<span class="chip">🔒 Chiuso</span>' : '<span class="chip">🔓 Aperto</span>';
-      const meta = ora ? `📅 ${esc(data)} • 🕒 ${esc(ora)} ${lockedChip}` : `📅 ${esc(data)} ${lockedChip}`;
+      const dataTxt = data ? esc(data) : 'Data da definire';
+      const meta = ora ? `📅 ${dataTxt} • 🕒 ${esc(ora)} ${lockedChip}` : `📅 ${dataTxt} ${lockedChip}`;
       document.getElementById('event-preview').innerHTML = `
         <div class="event-title">${esc(titolo)}</div>
         <div class="event-meta">${meta}</div>
