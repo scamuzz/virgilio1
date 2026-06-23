@@ -549,14 +549,17 @@
   }
 
   function getSortedEventEntries() {
+    const dateRank = (value) => {
+      const raw = cleanString(value);
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+      if (!m) return 0;
+      return Number(`${m[1]}${m[2]}${m[3]}`);
+    };
+
     return Object.entries(eventiData).sort((a, b) => {
       const aInfo = a[1] && a[1].info ? a[1].info : {};
       const bInfo = b[1] && b[1].info ? b[1].info : {};
-      const aDate = Date.parse(cleanString(aInfo.data));
-      const bDate = Date.parse(cleanString(bInfo.data));
-      const safeADate = Number.isFinite(aDate) ? aDate : 0;
-      const safeBDate = Number.isFinite(bDate) ? bDate : 0;
-      const byDate = safeBDate - safeADate;
+      const byDate = dateRank(bInfo.data) - dateRank(aInfo.data);
       if (byDate) return byDate;
       return cleanString(aInfo.titolo).localeCompare(cleanString(bInfo.titolo), 'it');
     });
@@ -616,6 +619,7 @@
 
   function selectFallbackEvent() {
     const sorted = getSortedEventEntries();
+    // Fallback: when the stored id is missing, use the most recent event in lista.
     const fallbackId = sorted.length ? sorted[0][0] : '';
     if (!fallbackId) {
       if (currentEventId) currentEventIdRef.set(null);
@@ -639,7 +643,9 @@
       newRef.set(legacy).then(() => {
         currentEventId = newRef.key;
         currentEventIdRef.set(newRef.key);
-        legacyEventRef.remove();
+        return legacyEventRef.remove();
+      }).catch(() => {
+        showToast('⚠️ Migrazione evento precedente non completata');
       });
     });
   }
@@ -737,13 +743,13 @@
 
   eventiRef.on('value', snap => {
     eventiData = snap.val() || {};
-    if (!eventiData[currentEventId]) selectFallbackEvent();
+    if (!currentEventId || !eventiData[currentEventId]) selectFallbackEvent();
     render();
   });
 
   currentEventIdRef.on('value', snap => {
     currentEventId = cleanString(snap.val());
-    if (!eventiData[currentEventId]) selectFallbackEvent();
+    if (!currentEventId || !eventiData[currentEventId]) selectFallbackEvent();
     render();
   });
 
@@ -860,8 +866,6 @@
     if (editingContribution) {
       const prev = editingContribution;
       const sameCategory = prev.categoria === categoria;
-      const oldRef = ref.child('contributi').child(prev.categoria).child(prev.itemId);
-      const targetRef = ref.child('contributi').child(categoria).child(prev.itemId);
       const payload = {
         nome: myName(),
         ownerKey: myKey(),
@@ -870,8 +874,14 @@
         updatedAt: serverTs()
       };
       if (sameCategory) {
+        const targetRef = ref.child('contributi').child(categoria).child(prev.itemId);
         targetRef.update(payload);
       } else {
+        const safeSegment = (value) => /^[^.#$\[\]/]+$/.test(value);
+        if (!safeSegment(categoria) || !safeSegment(prev.categoria)) {
+          showToast('⚠️ Categoria non valida');
+          return;
+        }
         const updates = {};
         updates[`${categoria}/${prev.itemId}`] = payload;
         updates[`${prev.categoria}/${prev.itemId}`] = null;
@@ -919,7 +929,10 @@
         opt.textContent = `${idx + 1}. ${eventLabel(eventVal.info || {})}`;
         eventSelector.appendChild(opt);
       });
-      eventSelector.value = currentEventId && eventiData[currentEventId] ? currentEventId : sortedEvents[0][0];
+      const selectedId = currentEventId && eventiData[currentEventId]
+        ? currentEventId
+        : (sortedEvents[0] ? sortedEvents[0][0] : '');
+      eventSelector.value = selectedId;
     }
 
     const titolo = cleanString(info.titolo);
@@ -985,7 +998,7 @@
     CATEGORIES.forEach(cat => {
       const entries = Object.entries(contributi[cat.key] || {});
       const valid = entries
-        .map(([id, v]) => ({ id, ...v }))
+        .map(([id, v]) => ({ ...v, itemId: id }))
         .filter(v => v && cleanString(v.descrizione));
 
       summaryRows.push({
@@ -1018,8 +1031,8 @@
           const canEdit = !isLocked() && !!myKey() && cleanString(v.ownerKey) === myKey();
           const actions = canEdit
             ? `<div class="contribution-actions">
-                <button class="btn-mini" data-action="edit" data-category="${esc(row.key)}" data-id="${esc(v.id)}" type="button">Modifica</button>
-                <button class="btn-mini btn-danger" data-action="delete" data-category="${esc(row.key)}" data-id="${esc(v.id)}" type="button">Cancella</button>
+                <button class="btn-mini" data-action="edit" data-category="${esc(row.key)}" data-id="${esc(v.itemId)}" type="button" aria-label="Modifica contributo di ${esc(who)}">Modifica</button>
+                <button class="btn-mini btn-danger" data-action="delete" data-category="${esc(row.key)}" data-id="${esc(v.itemId)}" type="button" aria-label="Cancella contributo di ${esc(who)}">Cancella</button>
               </div>`
             : '';
           return `
