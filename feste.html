@@ -596,6 +596,10 @@
     return `${data} • ${titolo}`;
   }
 
+  function isSafeFirebaseSegment(value) {
+    return /^[^.#$\[\]/]+$/.test(value);
+  }
+
   function resetItemEditor() {
     editingContribution = null;
     itemQty.value = '';
@@ -619,7 +623,7 @@
 
   function selectFallbackEvent() {
     const sorted = getSortedEventEntries();
-    // Fallback: when the stored id is missing, use the most recent event in lista.
+    // Fallback: when the stored id is missing, use the most recent event nella lista.
     const fallbackId = sorted.length ? sorted[0][0] : '';
     if (!fallbackId) {
       if (currentEventId) currentEventIdRef.set(null);
@@ -648,6 +652,10 @@
         showToast('⚠️ Migrazione evento precedente non completata');
       });
     });
+  }
+
+  function ensureCurrentEventSelection() {
+    if (!currentEventId || !eventiData[currentEventId]) selectFallbackEvent();
   }
 
   CATEGORIES.forEach(cat => {
@@ -743,13 +751,13 @@
 
   eventiRef.on('value', snap => {
     eventiData = snap.val() || {};
-    if (!currentEventId || !eventiData[currentEventId]) selectFallbackEvent();
+    ensureCurrentEventSelection();
     render();
   });
 
   currentEventIdRef.on('value', snap => {
     currentEventId = cleanString(snap.val());
-    if (!currentEventId || !eventiData[currentEventId]) selectFallbackEvent();
+    ensureCurrentEventSelection();
     render();
   });
 
@@ -877,8 +885,7 @@
         const targetRef = ref.child('contributi').child(categoria).child(prev.itemId);
         targetRef.update(payload);
       } else {
-        const safeSegment = (value) => /^[^.#$\[\]/]+$/.test(value);
-        if (!safeSegment(categoria) || !safeSegment(prev.categoria)) {
+        if (!isSafeFirebaseSegment(categoria) || !isSafeFirebaseSegment(prev.categoria)) {
           showToast('⚠️ Categoria non valida');
           return;
         }
@@ -978,7 +985,10 @@
     const yesNames = [];
     Object.values(parte).forEach(p => {
       if (!p) return;
-      if (p.stato !== RSVP_YES && p.stato !== RSVP_NO) return;
+      if (p.stato !== RSVP_YES && p.stato !== RSVP_NO) {
+        console.warn('Stato RSVP non valido ignorato:', p.stato);
+        return;
+      }
       if (p.stato === RSVP_YES) {
         countYes += 1;
         if (p.nome) yesNames.push(p.nome);
