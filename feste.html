@@ -646,8 +646,7 @@
       const newRef = eventiRef.push();
       newRef.set(legacy).then(() => {
         currentEventId = newRef.key;
-        currentEventIdRef.set(newRef.key);
-        return legacyEventRef.remove();
+        return currentEventIdRef.set(newRef.key).then(() => legacyEventRef.remove());
       }).catch(() => {
         showToast('⚠️ Migrazione evento precedente non completata');
       });
@@ -893,8 +892,13 @@
         const targetRef = ref.child('contributi').child(categoria).child(prev.itemId);
         targetRef.update(payload);
       } else {
+        const movedId = ref.child('contributi').child(categoria).push().key;
+        if (!movedId) {
+          showToast('⚠️ Impossibile spostare il contributo');
+          return;
+        }
         const updates = {};
-        updates[`${categoria}/${prev.itemId}`] = payload;
+        updates[`${categoria}/${movedId}`] = payload;
         updates[`${prev.categoria}/${prev.itemId}`] = null;
         ref.child('contributi').update(updates);
       }
@@ -940,9 +944,7 @@
         opt.textContent = `${idx + 1}. ${eventLabel(eventVal.info || {})}`;
         eventSelector.appendChild(opt);
       });
-      const selectedId = currentEventId && eventiData[currentEventId]
-        ? currentEventId
-        : (sortedEvents[0] ? sortedEvents[0][0] : '');
+      const selectedId = currentEventId && eventiData[currentEventId] ? currentEventId : '';
       eventSelector.value = selectedId;
     }
 
@@ -969,7 +971,8 @@
       const lockedChip = isLocked() ? '<span class="chip">🔒 Chiuso</span>' : '<span class="chip">🔓 Aperto</span>';
       const parts = [`📅 ${esc(data)}`];
       if (ora) parts.push(`🕒 ${esc(ora)}`);
-      parts.push(`<span class="chip">📚 ${sortedEvents.length} eventi disponibili</span>`);
+      const eventiTxt = sortedEvents.length === 1 ? 'evento disponibile' : 'eventi disponibili';
+      parts.push(`<span class="chip">📚 ${sortedEvents.length} ${eventiTxt}</span>`);
       const meta = `${parts.join(' • ')} ${lockedChip}`;
       document.getElementById('event-preview').innerHTML = `
         <div class="event-title">${esc(titolo)}</div>
