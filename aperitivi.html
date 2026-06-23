@@ -456,7 +456,8 @@
     if (!currentName) return '';
 
     const raw = currentName.toLowerCase().replace(/\s+/g, '_');
-    const safe = raw.replace(/[.#$/\[\]]/g, '');
+    const forbidden = new Set(['.', '#', '$', '[', ']', '/']);
+    const safe = Array.from(raw).filter(ch => !forbidden.has(ch)).join('');
     if (safe) return safe;
     return 'utente';
   }
@@ -671,7 +672,11 @@
     let countNo = 0;
     const yesNames = [];
     Object.values(parte).forEach(p => {
-      if (!p || (p.stato !== RSVP_YES && p.stato !== RSVP_NO)) return;
+      if (!p) return;
+      if (p.stato !== RSVP_YES && p.stato !== RSVP_NO) {
+        console.warn('Stato RSVP non valido ignorato:', p.stato);
+        return;
+      }
       if (p.stato === RSVP_YES) {
         countYes += 1;
         if (p.nome) yesNames.push(p.nome);
