@@ -296,7 +296,7 @@
 
 <div class="header">
   <a class="back-link" href="index.html">&#8592; Home</a>
-  <span class="icons" role="img" aria-label="Icona con due calici di vino">🍷🍷</span>
+  <span class="icons" role="img" aria-label="Icona con due calici di vino bianco">🥂🥂</span>
   <h1>Aperitivi e Feste</h1>
   <div class="subtitle">Organizza eventi e coordina i contributi dei residenti</div>
   <div class="sync-status">
@@ -318,32 +318,6 @@
     <label class="label" for="resident-name">Il tuo nome</label>
     <input id="resident-name" class="input" type="text" maxlength="30" placeholder="Es. Marco, Giulia…" autocomplete="off" spellcheck="false" />
     <div class="helper">Il nome viene salvato automaticamente su questo dispositivo.</div>
-  </div>
-
-  <div class="card">
-    <div class="section-label">🗓️ Evento</div>
-    <div class="event-grid" style="margin-bottom:10px;">
-      <div>
-        <label class="label" for="event-title">Titolo evento</label>
-        <input id="event-title" class="input" type="text" maxlength="80" placeholder="Es. Aperitivo in giardino" />
-      </div>
-      <div>
-        <label class="label" for="event-date">Data</label>
-        <input id="event-date" class="input" type="date" />
-      </div>
-      <div>
-        <label class="label" for="event-time">Ora (opzionale)</label>
-        <input id="event-time" class="input" type="time" aria-required="false" />
-      </div>
-    </div>
-    <label class="label" for="event-note">Note (opzionale)</label>
-    <textarea id="event-note" class="textarea" maxlength="500" placeholder="Orario, luogo, indicazioni..."></textarea>
-
-    <div class="grid-2" style="margin-top:10px;">
-      <button id="save-event-btn" class="btn btn-primary">💾 Salva evento</button>
-      <button id="toggle-lock-btn" class="btn btn-ghost">🔓 Evento aperto</button>
-    </div>
-    <div class="helper">Quando l'evento è chiuso, RSVP e contributi vengono bloccati.</div>
   </div>
 
   <div class="card" id="event-preview-card">
@@ -375,7 +349,7 @@
     <label class="label" for="item-desc">Descrizione</label>
     <input id="item-desc" class="input" type="text" maxlength="80" placeholder="Es. Pizza margherita, Coca-Cola 1.5L..." />
     <button id="save-item-btn" class="btn btn-primary" style="width:100%; margin-top:10px;">➕ Salva contributo</button>
-    <div class="helper">Ogni residente mantiene un solo contributo per categoria (aggiornabile).</div>
+    <div class="helper">Ogni residente può salvare più contributi, anche nella stessa categoria.</div>
   </div>
 
   <div class="card">
@@ -396,6 +370,32 @@
   <div class="card">
     <div class="section-label">🧺 Totale da portare per tipologia</div>
     <div id="categories-summary" class="cat-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">🗓️ Evento</div>
+    <div class="event-grid" style="margin-bottom:10px;">
+      <div>
+        <label class="label" for="event-title">Titolo evento</label>
+        <input id="event-title" class="input" type="text" maxlength="80" placeholder="Es. Aperitivo in giardino" />
+      </div>
+      <div>
+        <label class="label" for="event-date">Data</label>
+        <input id="event-date" class="input" type="date" />
+      </div>
+      <div>
+        <label class="label" for="event-time">Ora (opzionale)</label>
+        <input id="event-time" class="input" type="time" aria-required="false" />
+      </div>
+    </div>
+    <label class="label" for="event-note">Note (opzionale)</label>
+    <textarea id="event-note" class="textarea" maxlength="500" placeholder="Orario, luogo, indicazioni..."></textarea>
+
+    <div class="grid-2" style="margin-top:10px;">
+      <button id="save-event-btn" class="btn btn-primary">💾 Salva evento</button>
+      <button id="toggle-lock-btn" class="btn btn-ghost">🔓 Evento aperto</button>
+    </div>
+    <div class="helper">Quando l'evento è chiuso, RSVP e contributi vengono bloccati.</div>
   </div>
 </div>
 
@@ -629,8 +629,7 @@
     eventiRef
       .child('contributi')
       .child(categoria)
-      .child(myKey())
-      .set({
+      .push({
         nome: myName(),
         qty,
         descrizione,
@@ -730,25 +729,13 @@
     });
 
     const summaryEl = document.getElementById('categories-summary');
-    const allEmpty = summaryRows.every(r => r.total === 0);
-    if (allEmpty) {
+    const nonEmptyRows = summaryRows.filter(r => r.total > 0);
+    if (!nonEmptyRows.length) {
       summaryEl.innerHTML = '<div class="empty">Nessun contributo registrato al momento.</div>';
       return;
     }
 
-    summaryEl.innerHTML = summaryRows.map(row => {
-      if (row.total === 0) {
-        return `
-          <div class="cat-item">
-            <div class="cat-head">
-              <span class="cat-name">${esc(row.label)}</span>
-              <span class="cat-count">0 contributi</span>
-            </div>
-            <div class="cat-body">Nessun residente assegnato.</div>
-          </div>
-        `;
-      }
-
+    summaryEl.innerHTML = nonEmptyRows.map(row => {
       const details = row.entries
         .sort((a, b) => cleanString(a.nome).localeCompare(cleanString(b.nome), 'it'))
         .map(v => {
