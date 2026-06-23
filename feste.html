@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>🍷🍷 Aperitivi e Feste — Virgilio 1</title>
+  <title>Aperitivi e Feste — Virgilio 1</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { width: 100%; overflow-x: hidden; }
@@ -110,6 +110,11 @@
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .event-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
       gap: 10px;
     }
 
@@ -278,7 +283,7 @@
     }
 
     @media (max-width: 420px) {
-      .grid-2, .summary-grid {
+      .grid-2, .summary-grid, .event-grid {
         grid-template-columns: 1fr;
       }
       .status-row {
@@ -317,7 +322,7 @@
 
   <div class="card">
     <div class="section-label">🗓️ Evento</div>
-    <div class="grid-2" style="margin-bottom:10px; grid-template-columns:1.3fr 1fr 1fr;">
+    <div class="event-grid" style="margin-bottom:10px;">
       <div>
         <label class="label" for="event-title">Titolo evento</label>
         <input id="event-title" class="input" type="text" maxlength="80" placeholder="Es. Aperitivo in giardino" />
