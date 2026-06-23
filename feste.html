@@ -332,7 +332,7 @@
         <input id="event-date" class="input" type="date" />
       </div>
       <div>
-        <label class="label" for="event-time">Ora</label>
+        <label class="label" for="event-time">Ora (opzionale)</label>
         <input id="event-time" class="input" type="time" />
       </div>
     </div>
@@ -667,7 +667,7 @@
       document.getElementById('event-preview').innerHTML = 'Nessun evento configurato.';
     } else {
       const lockedChip = isLocked() ? '<span class="chip">🔒 Chiuso</span>' : '<span class="chip">🔓 Aperto</span>';
-      const dataTxt = data ? esc(data) : 'Data da definire';
+      const dataTxt = esc(data);
       const parts = [`📅 ${dataTxt}`];
       if (ora) parts.push(`🕒 ${esc(ora)}`);
       const meta = `${parts.join(' • ')} ${lockedChip}`;
