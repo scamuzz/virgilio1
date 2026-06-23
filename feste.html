@@ -365,6 +365,7 @@
     <label class="label" for="resident-name">Il tuo nome</label>
     <input id="resident-name" class="input" type="text" maxlength="30" placeholder="Es. Marco, Giulia…" autocomplete="off" spellcheck="false" />
     <div class="helper">Il nome viene salvato automaticamente su questo dispositivo.</div>
+    <button id="show-event-editor-btn" class="btn btn-primary" style="width:100%; margin-top:10px;" type="button">➕ Nuovo evento</button>
   </div>
 
   <div class="card" id="event-preview-card">
@@ -376,7 +377,6 @@
         <select id="event-selector" class="select"></select>
       </div>
       <button id="toggle-lock-btn" class="btn btn-ghost" type="button">🔓 Evento aperto</button>
-      <button id="show-event-editor-btn" class="btn btn-primary" type="button">➕</button>
     </div>
   </div>
 
@@ -544,6 +544,15 @@
     return `utente_${encodeURIComponent(currentName).replace(/%/g, '_')}`;
   }
 
+  function isContributionOwnedByMe(contribution) {
+    if (!contribution) return false;
+    const mine = myKey();
+    if (!mine) return false;
+    const ownerKey = cleanString(contribution.ownerKey);
+    if (ownerKey) return ownerKey === mine;
+    return cleanString(contribution.nome).toLowerCase() === myName().toLowerCase();
+  }
+
   function serverTs() {
     return firebase.database.ServerValue.TIMESTAMP;
   }
@@ -708,7 +717,7 @@
       showToast('⚠️ Contributo non trovato');
       return;
     }
-    if (cleanString(raw.ownerKey) !== myKey()) {
+    if (!isContributionOwnedByMe(raw)) {
       showToast('⛔ Puoi modificare solo i tuoi contributi');
       return;
     }
@@ -1053,7 +1062,7 @@
           const what = cleanString(v.descrizione);
           const whoAria = escAttrText(who);
           const qtyTxt = qty ? ` (${esc(qty)})` : '';
-          const canEdit = !isLocked() && !!myKey() && cleanString(v.ownerKey) === myKey();
+          const canEdit = !isLocked() && isContributionOwnedByMe(v);
           const actions = canEdit
             ? `<div class="contribution-actions">
                 <button class="btn-mini" data-action="edit" data-category="${esc(row.key)}" data-id="${esc(v.itemId)}" type="button" aria-label="Modifica contributo di ${whoAria}">Modifica</button>
