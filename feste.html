@@ -725,7 +725,7 @@
       showToast('⚠️ Seleziona prima un evento valido');
       return;
     }
-    const confirmed = window.confirm('Vuoi cancellare questo evento? Verranno rimossi anche partecipazioni e contributi.');
+    const confirmed = window.confirm('Vuoi cancellare questo evento? Verranno rimossi anche le partecipazioni e i contributi.');
     if (!confirmed) return;
     const deletedEventId = currentEventId;
     const ref = currentEventRef();
@@ -734,7 +734,9 @@
       currentEventId = '';
       return currentEventIdRef.set(null);
     }).then(() => {
-      if (editingEventId === deletedEventId) closeEventEditor();
+      const wasEditingDeletedEvent = editingEventId === deletedEventId;
+      editingEventId = '';
+      if (wasEditingDeletedEvent) closeEventEditor();
       showToast('🗑️ Evento cancellato');
     }).catch(() => showToast('⚠️ Impossibile cancellare l’evento'));
   });
