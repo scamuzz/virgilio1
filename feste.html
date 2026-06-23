@@ -177,7 +177,7 @@
       display: flex;
       gap: 10px;
       margin-top: 10px;
-      align-items: end;
+      align-items: flex-end;
       flex-wrap: wrap;
     }
     .event-switch-row .event-selector-wrap {
@@ -552,7 +552,11 @@
     return Object.entries(eventiData).sort((a, b) => {
       const aInfo = a[1] && a[1].info ? a[1].info : {};
       const bInfo = b[1] && b[1].info ? b[1].info : {};
-      const byDate = cleanString(bInfo.data).localeCompare(cleanString(aInfo.data), 'it');
+      const aDate = Date.parse(cleanString(aInfo.data));
+      const bDate = Date.parse(cleanString(bInfo.data));
+      const safeADate = Number.isFinite(aDate) ? aDate : 0;
+      const safeBDate = Number.isFinite(bDate) ? bDate : 0;
+      const byDate = safeBDate - safeADate;
       if (byDate) return byDate;
       return cleanString(aInfo.titolo).localeCompare(cleanString(bInfo.titolo), 'it');
     });
@@ -619,8 +623,25 @@
       return;
     }
     if (currentEventId !== fallbackId) {
+      currentEventId = fallbackId;
       currentEventIdRef.set(fallbackId);
     }
+  }
+
+  function maybeMigrateLegacyEvent() {
+    if (legacyMigrationChecked) return;
+    legacyMigrationChecked = true;
+    legacyEventRef.once('value').then(oldSnap => {
+      const legacy = oldSnap.val();
+      const hasLegacy = legacy && legacy.info && cleanString(legacy.info.titolo) && cleanString(legacy.info.data);
+      if (!hasLegacy) return;
+      const newRef = eventiRef.push();
+      newRef.set(legacy).then(() => {
+        currentEventId = newRef.key;
+        currentEventIdRef.set(newRef.key);
+        legacyEventRef.remove();
+      });
+    });
   }
 
   CATEGORIES.forEach(cat => {
@@ -712,21 +733,10 @@
     }
   });
 
+  maybeMigrateLegacyEvent();
+
   eventiRef.on('value', snap => {
     eventiData = snap.val() || {};
-    if (!legacyMigrationChecked && !Object.keys(eventiData).length) {
-      legacyMigrationChecked = true;
-      legacyEventRef.once('value').then(oldSnap => {
-        const legacy = oldSnap.val();
-        const hasLegacy = legacy && legacy.info && cleanString(legacy.info.titolo) && cleanString(legacy.info.data);
-        if (!hasLegacy) return;
-        const newRef = eventiRef.push();
-        newRef.set(legacy).then(() => {
-          currentEventIdRef.set(newRef.key);
-          legacyEventRef.remove();
-        });
-      });
-    }
     if (!eventiData[currentEventId]) selectFallbackEvent();
     render();
   });
@@ -862,7 +872,10 @@
       if (sameCategory) {
         targetRef.update(payload);
       } else {
-        oldRef.remove().then(() => targetRef.set(payload));
+        const updates = {};
+        updates[`${categoria}/${prev.itemId}`] = payload;
+        updates[`${prev.categoria}/${prev.itemId}`] = null;
+        ref.child('contributi').update(updates);
       }
       resetItemEditor();
       showToast('💾 Contributo aggiornato');
