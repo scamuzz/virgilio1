@@ -296,7 +296,7 @@
 
 <div class="header">
   <a class="back-link" href="index.html">&#8592; Home</a>
-  <span class="icons" role="img" aria-label="Aperitivi e Feste">🍷🍷</span>
+  <span class="icons" role="img" aria-label="Icona due calici di vino">🍷🍷</span>
   <h1>Aperitivi e Feste</h1>
   <div class="subtitle">Organizza eventi e coordina i contributi dei residenti</div>
   <div class="sync-status">
@@ -547,12 +547,6 @@
       showToast('⚠️ Inserisci la data evento');
       return;
     }
-    if (!ora) {
-      eventTimeInput.focus();
-      showToast('⚠️ Inserisci l’ora evento');
-      return;
-    }
-
     const current = eventData.info || {};
     const payload = {
       titolo,
