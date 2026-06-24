@@ -482,21 +482,21 @@
   const RSVP_NO = 'no';
 
   const CATEGORIES = [
-    { key: 'pizze_focacce', label: 'Pizze / Focacce' },
-    { key: 'salumi', label: 'Salumi' },
-    { key: 'primi', label: 'Primi' },
-    { key: 'secondi', label: 'Secondi' },
-    { key: 'stuzzichini', label: 'Stuzzichini / Antipasti' },
-    { key: 'dolci', label: 'Dolci' },
-    { key: 'patatine', label: 'Patatine' },
-    { key: 'contorni', label: 'Contorni' },
-    { key: 'lime', label: 'Lime / Menta' },
-    { key: 'bibite', label: 'Bibite' },
-    { key: 'alcolici', label: 'Alcolici' },
-    { key: 'piatti_bicchieri', label: 'Piatti / Bicchieri' },
-    { key: 'posate', label: 'Posate' },
-    { key: 'tovaglioli', label: 'Tovaglioli' },
-    { key: 'altro', label: 'Altro' }
+    { key: 'pizze_focacce', label: 'Pizze / Focacce', icon: '🍕' },
+    { key: 'salumi', label: 'Salumi', icon: '🥩' },
+    { key: 'primi', label: 'Primi', icon: '🍝' },
+    { key: 'secondi', label: 'Secondi', icon: '🍖' },
+    { key: 'stuzzichini', label: 'Stuzzichini / Antipasti', icon: '🥗' },
+    { key: 'dolci', label: 'Dolci', icon: '🍰' },
+    { key: 'patatine', label: 'Patatine', icon: '🍟' },
+    { key: 'contorni', label: 'Contorni', icon: '🥦' },
+    { key: 'lime', label: 'Lime / Menta', icon: '🍋' },
+    { key: 'bibite', label: 'Bibite', icon: '🥤' },
+    { key: 'alcolici', label: 'Alcolici', icon: '🍺' },
+    { key: 'piatti_bicchieri', label: 'Piatti / Bicchieri', icon: '🍽️' },
+    { key: 'posate', label: 'Posate', icon: '🍴' },
+    { key: 'tovaglioli', label: 'Tovaglioli', icon: '🧻' },
+    { key: 'altro', label: 'Altro', icon: '📦' }
   ];
 
   let eventiData = {};
@@ -629,6 +629,7 @@
 
   function resetItemEditor() {
     editingContribution = null;
+    itemCategory.value = '';
     itemQty.value = '';
     itemDesc.value = '';
     saveItemBtn.textContent = '➕ Salva contributo';
@@ -690,10 +691,17 @@
     if (!currentEventId || !eventiData[currentEventId]) selectFallbackEvent();
   }
 
+  const placeholderOpt = document.createElement('option');
+  placeholderOpt.value = '';
+  placeholderOpt.textContent = '— Seleziona categoria —';
+  placeholderOpt.disabled = true;
+  placeholderOpt.selected = true;
+  itemCategory.appendChild(placeholderOpt);
+
   CATEGORIES.forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat.key;
-    opt.textContent = cat.label;
+    opt.textContent = `${cat.icon} ${cat.label}`;
     itemCategory.appendChild(opt);
   });
 
@@ -1059,6 +1067,7 @@
       summaryRows.push({
         key: cat.key,
         label: cat.label,
+        icon: cat.icon,
         total: valid.length,
         entries: valid
       });
@@ -1103,7 +1112,7 @@
       return `
         <div class="cat-item">
           <div class="cat-head">
-            <span class="cat-name">${esc(row.label)}</span>
+            <span class="cat-name">${row.icon} ${esc(row.label)}</span>
             <span class="cat-count">${row.total} contribut${row.total === 1 ? 'o' : 'i'}</span>
           </div>
           <div class="cat-body">${details}</div>
