@@ -1,4 +1,4 @@
-const CACHE_NAME = 'virgilio1-v2';
+const CACHE_NAME = 'virgilio1-v3';
 const ASSETS = [
   '/virgilio1/',
   '/virgilio1/index.html',

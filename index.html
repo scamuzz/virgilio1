@@ -400,7 +400,16 @@
     if (opted) {
       await OneSignal.User.PushSubscription.optOut();
     } else {
-      await OneSignal.Notifications.requestPermission();
+      try {
+        await OneSignal.Notifications.requestPermission();
+      } catch (e) {
+        if (e && String(e.message || e).toLowerCase().includes('dismiss')) {
+          // User dismissed the permission prompt — nothing to do
+          await refreshNotifyUI();
+          return;
+        }
+        throw e;
+      }
       if (Notification.permission === 'granted') {
         await OneSignal.User.PushSubscription.optIn();
       }
