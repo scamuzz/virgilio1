@@ -1,0 +1,28 @@
+{
+  "name": "Virgilio 1 — Portale Condominiale",
+  "short_name": "Virgilio 1",
+  "description": "Portale condominiale per i residenti del Condominio Virgilio 1",
+  "start_url": "/virgilio1/",
+  "scope": "/virgilio1/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e8f4fd",
+  "theme_color": "#0077b6",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["utilities", "lifestyle"]
+}
