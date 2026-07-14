@@ -169,6 +169,35 @@
       text-align: center; font-size: 0.7rem; color: #aabbc8;
       padding: 8px 0 24px; letter-spacing: 0.3px;
     }
+
+    /* ── NOTIFY BUTTON ── */
+    .notify-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: white; border-radius: 14px; padding: 12px 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 14px rgba(0,77,122,0.08);
+      border: 2px solid #ddeeff;
+      gap: 10px;
+    }
+    .notify-bar-text {
+      font-size: 0.78rem; color: #546e7a; line-height: 1.4; flex: 1;
+    }
+    .notify-bar-text strong { color: #01579b; }
+    .notify-btn {
+      border: none; border-radius: 10px;
+      padding: 9px 16px; font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      color: white; white-space: nowrap;
+      box-shadow: 0 3px 10px rgba(0,119,182,0.25);
+      flex-shrink: 0;
+    }
+    .notify-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .notify-btn.active {
+      background: #e8f5e9; color: #2e7d32;
+      box-shadow: none; cursor: default; transform: none;
+    }
+    #notify-bar { display: none; }
   </style>
 </head>
 <body>
@@ -201,6 +230,15 @@
   </div>
 
   <div class="section-label">🗂️ Servizi disponibili</div>
+
+  <!-- Barra attivazione notifiche -->
+  <div class="notify-bar" id="notify-bar">
+    <div class="notify-bar-text">
+      <strong>🔔 Notifiche push</strong><br>
+      Ricevi avvisi in tempo reale dal condominio
+    </div>
+    <button class="notify-btn" id="notify-btn" onclick="toggleNotify()">Attiva</button>
+  </div>
 
   <div class="menu-grid">
 
@@ -297,6 +335,57 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js');
       });
+    }
+  </script>
+
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "3cc6b0c1-7285-4497-95b3-6a6dd57a87d8",
+        serviceWorkerPath: "sw.js",
+        serviceWorkerParam: { scope: "/virgilio1/" },
+        notifyButton: { enable: false }
+      });
+      await refreshNotifyUI();
+      OneSignal.User.PushSubscription.addEventListener('change', refreshNotifyUI);
+    });
+
+    async function refreshNotifyUI() {
+      const bar = document.getElementById('notify-bar');
+      const btn = document.getElementById('notify-btn');
+      if (!bar || !btn) return;
+
+      // mostra la barra solo se le notifiche push sono supportate
+      if (!('Notification' in window)) return;
+
+      bar.style.display = 'flex';
+
+      const opted = OneSignal.User.PushSubscription.optedIn;
+      if (opted) {
+        btn.textContent = '✅ Attive';
+        btn.classList.add('active');
+      } else {
+        btn.textContent = '🔔 Attiva';
+        btn.classList.remove('active');
+      }
+    }
+
+    async function toggleNotify() {
+      const btn = document.getElementById('notify-btn');
+      if (!btn) return;
+      const opted = OneSignal.User.PushSubscription.optedIn;
+      if (opted) {
+        await OneSignal.User.PushSubscription.optOut();
+      } else {
+        await OneSignal.Notifications.requestPermission();
+        if (Notification.permission === 'granted') {
+          await OneSignal.User.PushSubscription.optIn();
+        }
+      }
+      await refreshNotifyUI();
     }
   </script>
 </body>

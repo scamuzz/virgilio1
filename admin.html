@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>🔧 Admin — Virgilio 1</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; overflow-x: hidden; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: white;
+      padding: 36px 20px 24px;
+      text-align: center;
+      position: relative;
+    }
+    .header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: 0.5px; }
+    .header .subtitle { font-size: 0.8rem; opacity: 0.75; margin-top: 6px; }
+
+    .wave-divider {
+      display: block; line-height: 0; overflow: hidden;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    .container { max-width: 480px; margin: 0 auto; padding: 24px 14px 64px; }
+
+    /* ── LOGIN ── */
+    .login-card {
+      background: white; border-radius: 20px; padding: 32px 24px;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.10);
+      text-align: center;
+    }
+    .login-card .icon { font-size: 3rem; margin-bottom: 14px; display: block; }
+    .login-card h2 { font-size: 1.1rem; color: #1a1a2e; margin-bottom: 6px; }
+    .login-card p { font-size: 0.78rem; color: #78909c; margin-bottom: 20px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: white; border-radius: 18px; padding: 22px 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+      margin-bottom: 18px;
+    }
+    .card h3 {
+      font-size: 0.78rem; color: #0f3460;
+      text-transform: uppercase; letter-spacing: 0.9px;
+      font-weight: 800; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── FORM ELEMENTS ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 0.72rem; font-weight: 700; color: #455a64; margin-bottom: 5px; display: block; }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%; border: 2px solid #e0e7ef; border-radius: 10px;
+      padding: 11px 14px; font-size: 0.88rem; outline: none;
+      color: #333; transition: border-color 0.2s; font-family: inherit;
+      background: #f8fafc;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: #0f3460; background: #fff; }
+    .form-textarea { min-height: 90px; resize: vertical; }
+
+    .char-counter { font-size: 0.65rem; color: #90a4ae; text-align: right; margin-top: 3px; }
+
+    .form-hint { font-size: 0.70rem; color: #90a4ae; margin-top: 5px; line-height: 1.5; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      width: 100%; border: none; border-radius: 10px;
+      padding: 12px 16px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      margin-top: 4px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #0f3460, #1a6eb5);
+      color: white;
+      box-shadow: 0 3px 12px rgba(15,52,96,0.30);
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-danger {
+      background: #fff0f0; color: #c62828;
+      border: 2px solid #ffcdd2;
+      font-size: 0.78rem; padding: 9px 14px;
+    }
+    .btn-danger:hover { background: #ffcdd2; }
+
+    .btn-send {
+      background: linear-gradient(135deg, #e65100, #ff8f00);
+      color: white;
+      box-shadow: 0 3px 12px rgba(230,81,0,0.30);
+      font-size: 1rem;
+    }
+    .btn-send:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── STATUS ── */
+    .status-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border-radius: 10px; margin-top: 14px;
+      font-size: 0.78rem; font-weight: 600;
+    }
+    .status-row.success { background: #e8f5e9; color: #2e7d32; }
+    .status-row.error   { background: #ffebee; color: #c62828; }
+    .status-row.info    { background: #e3f2fd; color: #1565c0; }
+    #send-status { display: none; }
+
+    /* ── API KEY STATUS ── */
+    .apikey-status {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.72rem; padding: 8px 12px; border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .apikey-status.set   { background: #e8f5e9; color: #2e7d32; }
+    .apikey-status.unset { background: #fff8e1; color: #f57f17; }
+
+    /* ── LOGOUT ── */
+    .logout-row { text-align: center; margin-top: 10px; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1a1a2e; color: white;
+      padding: 10px 22px; border-radius: 24px;
+      font-size: 0.83rem; font-weight: 600;
+      transition: transform 0.3s ease; z-index: 999;
+      white-space: nowrap; max-width: calc(100vw - 32px);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    .hidden { display: none !important; }
+
+    /* ── RECENT ── */
+    .notif-item {
+      background: #f8fafc; border-radius: 10px; padding: 10px 14px;
+      margin-bottom: 8px; border: 1px solid #e8eef4;
+      font-size: 0.78rem;
+    }
+    .notif-item-title { font-weight: 700; color: #1a1a2e; margin-bottom: 2px; }
+    .notif-item-body  { color: #546e7a; }
+    .notif-item-time  { font-size: 0.65rem; color: #b0bec5; margin-top: 4px; }
+    .empty-recent { font-size: 0.78rem; color: #b0bec5; text-align: center; padding: 12px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔧 Console Admin</h1>
+  <div class="subtitle">Condominio Virgilio 1 — Area riservata</div>
+</div>
+
+<div class="wave-divider">
+  <svg viewBox="0 0 1440 72" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,36 C180,72 360,0 540,36 C720,72 900,0 1080,36 C1260,72 1380,12 1440,36 L1440,72 L0,72 Z" fill="#f0f4f8"/>
+    <path d="M0,50 C220,18 440,66 660,46 C880,26 1100,62 1320,44 L1440,50 L1440,72 L0,72 Z" fill="#f0f4f8" opacity="0.55"/>
+  </svg>
+</div>
+
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="login-section">
+    <div class="login-card">
+      <span class="icon">🔐</span>
+      <h2>Accesso amministratore</h2>
+      <p>Inserisci la password per accedere alla console</p>
+      <div class="form-group">
+        <input class="form-input" type="password" id="psw-input"
+               placeholder="Password admin" autocomplete="off"/>
+      </div>
+      <button class="btn btn-primary" id="login-btn">Accedi</button>
+      <div id="login-error" class="status-row error hidden" style="margin-top:12px">
+        ❌ Password errata
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="admin-section" class="hidden">
+
+    <!-- API KEY SETUP -->
+    <div class="card" id="apikey-card">
+      <h3>🔑 Chiave API OneSignal</h3>
+      <div id="apikey-set-status" class="apikey-status hidden"></div>
+      <div class="form-group" id="apikey-input-group">
+        <label class="form-label">REST API Key</label>
+        <input class="form-input" type="password" id="apikey-input"
+               placeholder="os_v2_app_…" autocomplete="off"/>
+        <div class="form-hint">La chiave viene salvata solo nel browser (localStorage), non nel codice.</div>
+      </div>
+      <button class="btn btn-primary" id="apikey-save-btn" onclick="saveApiKey()">💾 Salva chiave</button>
+    </div>
+
+    <!-- INVIA NOTIFICA -->
+    <div class="card">
+      <h3>📢 Invia notifica push</h3>
+      <div class="form-group">
+        <label class="form-label">Titolo *</label>
+        <input class="form-input" type="text" id="notif-title"
+               placeholder="Es. Riunione condominiale" maxlength="60" autocomplete="off"/>
+        <div class="char-counter" id="title-counter">0 / 60</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Messaggio *</label>
+        <textarea class="form-textarea" id="notif-body"
+                  placeholder="Testo della notifica…" maxlength="200"></textarea>
+        <div class="char-counter" id="body-counter">0 / 200</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Link (opzionale)</label>
+        <input class="form-input" type="url" id="notif-url"
+               placeholder="https://scamuzz.github.io/virgilio1/bacheca.html"
+               autocomplete="off"/>
+        <div class="form-hint">La notifica aprirà questo link al tap. Se vuoto, apre la home.</div>
+      </div>
+      <button class="btn btn-send" id="send-btn" onclick="sendNotification()">
+        🚀 Invia a tutti i condomini
+      </button>
+      <div class="status-row" id="send-status"></div>
+    </div>
+
+    <!-- NOTIFICHE RECENTI -->
+    <div class="card">
+      <h3>📋 Notifiche inviate di recente</h3>
+      <div id="recent-list">
+        <div class="empty-recent">Nessuna notifica ancora inviata in questa sessione.</div>
+      </div>
+    </div>
+
+    <!-- LOGOUT -->
+    <div class="logout-row">
+      <button class="btn btn-danger" onclick="logout()">🚪 Esci dalla console</button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────
+  const APP_ID        = '3cc6b0c1-7285-4497-95b3-6a6dd57a87d8';
+  const ADMIN_HASH    = 'ef88683d4f9baeeef56c1ab1c047a09e56ecbe08acbacde4253a83c73d2836de';
+  const STORAGE_KEY   = 'v1_admin_apikey';
+  const SESSION_KEY   = 'v1_admin_session';
+
+  // ── PASSWORD CHECK ──────────────────────────────────────────
+  async function hashString(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function login() {
+    const psw   = document.getElementById('psw-input').value;
+    const hash  = await hashString(psw);
+    if (hash === ADMIN_HASH) {
+      sessionStorage.setItem(SESSION_KEY, '1');
+      showAdmin();
+    } else {
+      document.getElementById('login-error').classList.remove('hidden');
+      document.getElementById('psw-input').value = '';
+      document.getElementById('psw-input').focus();
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+    document.getElementById('admin-section').classList.add('hidden');
+    document.getElementById('login-section').classList.remove('hidden');
+    document.getElementById('psw-input').value = '';
+    showToast('👋 Sessione terminata');
+  }
+
+  function showAdmin() {
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('admin-section').classList.remove('hidden');
+    refreshApiKeyUI();
+  }
+
+  // ── INIT ────────────────────────────────────────────────────
+  if (sessionStorage.getItem(SESSION_KEY)) {
+    showAdmin();
+  }
+
+  document.getElementById('login-btn').addEventListener('click', login);
+  document.getElementById('psw-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+
+  // ── API KEY ─────────────────────────────────────────────────
+  function refreshApiKeyUI() {
+    const key       = localStorage.getItem(STORAGE_KEY);
+    const statusEl  = document.getElementById('apikey-set-status');
+    const inputGrp  = document.getElementById('apikey-input-group');
+    const saveBtn   = document.getElementById('apikey-save-btn');
+
+    if (key) {
+      statusEl.className = 'apikey-status set';
+      statusEl.textContent = '✅ Chiave API configurata — la chiave è salvata nel browser';
+      statusEl.classList.remove('hidden');
+      inputGrp.classList.add('hidden');
+      saveBtn.textContent = '🔄 Sostituisci chiave';
+      saveBtn.onclick = () => {
+        inputGrp.classList.remove('hidden');
+        statusEl.classList.add('hidden');
+        saveBtn.textContent = '💾 Salva chiave';
+        saveBtn.onclick = saveApiKey;
+      };
+    } else {
+      statusEl.className = 'apikey-status unset';
+      statusEl.textContent = '⚠️ Chiave API non ancora configurata';
+      statusEl.classList.remove('hidden');
+    }
+  }
+
+  function saveApiKey() {
+    const val = document.getElementById('apikey-input').value.trim();
+    if (!val) { showToast('⚠️ Inserisci la chiave API'); return; }
+    localStorage.setItem(STORAGE_KEY, val);
+    document.getElementById('apikey-input').value = '';
+    refreshApiKeyUI();
+    showToast('✅ Chiave salvata nel browser');
+  }
+
+  // ── CHAR COUNTERS ───────────────────────────────────────────
+  document.getElementById('notif-title').addEventListener('input', function() {
+    document.getElementById('title-counter').textContent = `${this.value.length} / 60`;
+  });
+  document.getElementById('notif-body').addEventListener('input', function() {
+    document.getElementById('body-counter').textContent = `${this.value.length} / 200`;
+  });
+
+  // ── SEND NOTIFICATION ───────────────────────────────────────
+  let sentHistory = [];
+
+  async function sendNotification() {
+    const apiKey = localStorage.getItem(STORAGE_KEY);
+    if (!apiKey) {
+      showToast('⚠️ Configura prima la chiave API');
+      return;
+    }
+
+    const title = document.getElementById('notif-title').value.trim();
+    const body  = document.getElementById('notif-body').value.trim();
+    const url   = document.getElementById('notif-url').value.trim()
+                  || 'https://scamuzz.github.io/virgilio1/';
+
+    if (!title) { showToast('⚠️ Inserisci il titolo'); return; }
+    if (!body)  { showToast('⚠️ Inserisci il messaggio'); return; }
+
+    const btn = document.getElementById('send-btn');
+    const statusEl = document.getElementById('send-status');
+    btn.disabled = true;
+    btn.textContent = '⏳ Invio in corso…';
+    statusEl.style.display = 'flex';
+    statusEl.className = 'status-row info';
+    statusEl.textContent = '📡 Connessione a OneSignal…';
+
+    try {
+      const res = await fetch('https://onesignal.com/api/v1/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Key ${apiKey}`
+        },
+        body: JSON.stringify({
+          app_id: APP_ID,
+          included_segments: ['All'],
+          headings: { it: title, en: title },
+          contents: { it: body,  en: body  },
+          url: url,
+          ttl: 86400
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.id) {
+        statusEl.className = 'status-row success';
+        statusEl.textContent = `✅ Notifica inviata a ${data.recipients || 0} destinatari (ID: ${data.id.slice(0,8)}…)`;
+        document.getElementById('notif-title').value = '';
+        document.getElementById('notif-body').value  = '';
+        document.getElementById('notif-url').value   = '';
+        document.getElementById('title-counter').textContent = '0 / 60';
+        document.getElementById('body-counter').textContent  = '0 / 200';
+        addToHistory(title, body, data.recipients || 0);
+        showToast(`🚀 Inviata a ${data.recipients || 0} condomini!`);
+      } else {
+        const errMsg = data.errors ? data.errors.join(', ') : (data.error || 'Errore sconosciuto');
+        statusEl.className = 'status-row error';
+        statusEl.textContent = `❌ Errore: ${errMsg}`;
+        showToast('❌ Invio fallito');
+      }
+    } catch (err) {
+      statusEl.className = 'status-row error';
+      statusEl.textContent = `❌ Errore di rete: ${err.message}`;
+      showToast('❌ Errore di rete');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🚀 Invia a tutti i condomini';
+  }
+
+  // ── HISTORY ─────────────────────────────────────────────────
+  function addToHistory(title, body, recipients) {
+    sentHistory.unshift({ title, body, recipients, ts: Date.now() });
+    if (sentHistory.length > 10) sentHistory.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('recent-list');
+    if (sentHistory.length === 0) {
+      list.innerHTML = '<div class="empty-recent">Nessuna notifica ancora inviata in questa sessione.</div>';
+      return;
+    }
+    list.innerHTML = sentHistory.map(n => `
+      <div class="notif-item">
+        <div class="notif-item-title">${esc(n.title)}</div>
+        <div class="notif-item-body">${esc(n.body)}</div>
+        <div class="notif-item-time">${formatDate(n.ts)} • ${n.recipients} destinatari</div>
+      </div>
+    `).join('');
+  }
+
+  // ── UTILS ────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatDate(ts) {
+    const diff = Date.now() - ts;
+    if (diff < 60000)   return 'Ora';
+    if (diff < 3600000) return `${Math.floor(diff/60000)} min fa`;
+    return new Date(ts).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+
+</body>
+</html>
