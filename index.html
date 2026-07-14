@@ -348,6 +348,10 @@
   </script>
 
   <!-- OneSignal SDK -->
+
+
+
+  
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     let oneSignalReady = false;
@@ -357,8 +361,7 @@
       await OneSignal.init({
         appId: "3cc6b0c1-7285-4497-95b3-6a6dd57a87d8",
         serviceWorkerPath: "OneSignalSDKWorker.js",
-        serviceWorkerParam: { scope: "/virgilio1/" },
-        notifyButton: { enable: false }
+       
       });
       oneSignalReady = true;
       await refreshNotifyUI();
