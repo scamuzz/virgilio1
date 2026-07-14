@@ -1,4 +1,4 @@
-const CACHE_NAME = 'virgilio1-v3';
+const CACHE_NAME = 'virgilio1-v4';
 const ASSETS = [
   '/virgilio1/',
   '/virgilio1/index.html',
@@ -27,6 +27,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
+  self.skipWaiting();
 });
 
 // Activate: remove old caches and take control of all clients
