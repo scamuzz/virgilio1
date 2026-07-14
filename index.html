@@ -197,7 +197,7 @@
       background: #e8f5e9; color: #2e7d32;
       box-shadow: none; cursor: default; transform: none;
     }
-    #notify-bar { display: none; }
+    #notify-bar { display: none; } /* shown via JS when supported */
   </style>
 </head>
 <body>
@@ -328,7 +328,7 @@
 
 </div>
 
-<div class="page-footer">🏢 Condominio Virgilio 1 &nbsp;•&nbsp; Portale Condominiale</div>
+<div class="page-footer">🏢 Condominio Virgilio 1 &nbsp;•&nbsp; Portale Condominiale &nbsp;•&nbsp; <a href="admin.html" style="color:#aabbc8;text-decoration:none;">Admin</a></div>
 
   <script>
     if ('serviceWorker' in navigator) {
@@ -336,11 +336,22 @@
         navigator.serviceWorker.register('sw.js');
       });
     }
+
+    // Mostra la barra notifiche subito se il browser supporta le push,
+    // senza aspettare il caricamento di OneSignal SDK.
+    if ('Notification' in window && 'serviceWorker' in navigator) {
+      document.addEventListener('DOMContentLoaded', () => {
+        const bar = document.getElementById('notify-bar');
+        if (bar) bar.style.display = 'flex';
+      });
+    }
   </script>
 
   <!-- OneSignal SDK -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
+    let oneSignalReady = false;
+
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
@@ -349,6 +360,7 @@
         serviceWorkerParam: { scope: "/virgilio1/" },
         notifyButton: { enable: false }
       });
+      oneSignalReady = true;
       await refreshNotifyUI();
       OneSignal.User.PushSubscription.addEventListener('change', refreshNotifyUI);
     });
@@ -363,6 +375,8 @@
 
       bar.style.display = 'flex';
 
+      if (!oneSignalReady) return;
+
       const opted = OneSignal.User.PushSubscription.optedIn;
       if (opted) {
         btn.textContent = '✅ Attive';
@@ -376,6 +390,12 @@
     async function toggleNotify() {
       const btn = document.getElementById('notify-btn');
       if (!btn) return;
+
+      if (!oneSignalReady) {
+        btn.textContent = '⏳ Caricamento…';
+        return;
+      }
+
       const opted = OneSignal.User.PushSubscription.optedIn;
       if (opted) {
         await OneSignal.User.PushSubscription.optOut();

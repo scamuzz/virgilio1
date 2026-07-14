@@ -229,6 +229,12 @@
       <button class="btn btn-send" id="send-btn" onclick="sendNotification()">
         🚀 Invia a tutti i condomini
       </button>
+      <div class="form-hint" style="margin-top:10px;">
+        ⚠️ Assicurati che il secret <strong>ONESIGNAL_REST_API_KEY</strong> sia configurato in
+        <a href="https://github.com/scamuzz/virgilio1/settings/secrets/actions" target="_blank" rel="noopener">
+          Settings → Secrets → Actions
+        </a> del repository GitHub.
+      </div>
       <div class="status-row" id="send-status"></div>
     </div>
 
@@ -250,6 +256,10 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div style="text-align:center;padding:8px 0 24px;font-size:0.72rem;">
+  <a href="index.html" style="color:#90a4ae;text-decoration:none;">← Torna alla home</a>
+</div>
 
 <script>
   // ── CONFIG ──────────────────────────────────────────────────
