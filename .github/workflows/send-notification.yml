@@ -1,0 +1,62 @@
+name: Invia notifica push
+
+on:
+  repository_dispatch:
+    types: [send-notification]
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invia notifica tramite OneSignal
+        env:
+          ONESIGNAL_KEY: ${{ secrets.ONESIGNAL_REST_API_KEY }}
+          TITLE: ${{ github.event.client_payload.title }}
+          BODY: ${{ github.event.client_payload.body }}
+          URL: ${{ github.event.client_payload.url }}
+        run: |
+          python3 - <<'EOF'
+          import os, json, urllib.request, sys
+
+          title = os.environ.get("TITLE", "").strip()
+          body  = os.environ.get("BODY",  "").strip()
+          url   = os.environ.get("URL",   "").strip() or "https://scamuzz.github.io/virgilio1/"
+          key   = os.environ.get("ONESIGNAL_KEY", "").strip()
+
+          if not title or not body:
+              print("ERRORE: titolo o messaggio mancante")
+              sys.exit(1)
+
+          if not key:
+              print("ERRORE: secret ONESIGNAL_REST_API_KEY non configurato")
+              sys.exit(1)
+
+          payload = {
+              "app_id": "3cc6b0c1-7285-4497-95b3-6a6dd57a87d8",
+              "included_segments": ["All"],
+              "headings": {"it": title, "en": title},
+              "contents": {"it": body,  "en": body},
+              "url": url,
+              "ttl": 86400
+          }
+
+          req = urllib.request.Request(
+              "https://onesignal.com/api/v1/notifications",
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "Content-Type": "application/json",
+                  "Authorization": f"Key {key}"
+              }
+          )
+
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  result = json.loads(resp.read().decode("utf-8"))
+                  recipients = result.get("recipients", 0)
+                  notif_id   = result.get("id", "N/A")
+                  print(f"✅ Notifica inviata a {recipients} destinatari (ID: {notif_id})")
+          except urllib.error.HTTPError as e:
+              error_body = e.read().decode("utf-8")
+              print(f"ERRORE HTTP {e.code}: {error_body}")
+              sys.exit(1)
+          EOF

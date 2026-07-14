@@ -193,13 +193,13 @@
 
     <!-- API KEY SETUP -->
     <div class="card" id="apikey-card">
-      <h3>🔑 Chiave API OneSignal</h3>
+      <h3>🔑 GitHub Token</h3>
       <div id="apikey-set-status" class="apikey-status hidden"></div>
       <div class="form-group" id="apikey-input-group">
-        <label class="form-label">REST API Key</label>
+        <label class="form-label">Personal Access Token (PAT)</label>
         <input class="form-input" type="password" id="apikey-input"
-               placeholder="os_v2_app_…" autocomplete="off"/>
-        <div class="form-hint">La chiave viene salvata solo nel browser (localStorage), non nel codice.</div>
+               placeholder="github_pat_…" autocomplete="off"/>
+        <div class="form-hint">Token GitHub con scope <strong>repo</strong>. Salvato solo nel browser (localStorage).</div>
       </div>
       <button class="btn btn-primary" id="apikey-save-btn" onclick="saveApiKey()">💾 Salva chiave</button>
     </div>
@@ -253,9 +253,9 @@
 
 <script>
   // ── CONFIG ──────────────────────────────────────────────────
-  const APP_ID        = '3cc6b0c1-7285-4497-95b3-6a6dd57a87d8';
   const ADMIN_HASH    = 'ef88683d4f9baeeef56c1ab1c047a09e56ecbe08acbacde4253a83c73d2836de';
-  const STORAGE_KEY   = 'v1_admin_apikey';
+  const STORAGE_KEY   = 'v1_admin_ghtoken';
+  const REPO          = 'scamuzz/virgilio1';
   const SESSION_KEY   = 'v1_admin_session';
 
   // ── PASSWORD CHECK ──────────────────────────────────────────
@@ -310,30 +310,30 @@
 
     if (key) {
       statusEl.className = 'apikey-status set';
-      statusEl.textContent = '✅ Chiave API configurata — la chiave è salvata nel browser';
+      statusEl.textContent = '✅ GitHub Token configurato — salvato nel browser';
       statusEl.classList.remove('hidden');
       inputGrp.classList.add('hidden');
-      saveBtn.textContent = '🔄 Sostituisci chiave';
+      saveBtn.textContent = '🔄 Sostituisci token';
       saveBtn.onclick = () => {
         inputGrp.classList.remove('hidden');
         statusEl.classList.add('hidden');
-        saveBtn.textContent = '💾 Salva chiave';
+        saveBtn.textContent = '💾 Salva token';
         saveBtn.onclick = saveApiKey;
       };
     } else {
       statusEl.className = 'apikey-status unset';
-      statusEl.textContent = '⚠️ Chiave API non ancora configurata';
+      statusEl.textContent = '⚠️ GitHub Token non ancora configurato';
       statusEl.classList.remove('hidden');
     }
   }
 
   function saveApiKey() {
     const val = document.getElementById('apikey-input').value.trim();
-    if (!val) { showToast('⚠️ Inserisci la chiave API'); return; }
+    if (!val) { showToast('⚠️ Inserisci il GitHub Token'); return; }
     localStorage.setItem(STORAGE_KEY, val);
     document.getElementById('apikey-input').value = '';
     refreshApiKeyUI();
-    showToast('✅ Chiave salvata nel browser');
+    showToast('✅ Token salvato nel browser');
   }
 
   // ── CHAR COUNTERS ───────────────────────────────────────────
@@ -348,9 +348,9 @@
   let sentHistory = [];
 
   async function sendNotification() {
-    const apiKey = localStorage.getItem(STORAGE_KEY);
-    if (!apiKey) {
-      showToast('⚠️ Configura prima la chiave API');
+    const ghToken = localStorage.getItem(STORAGE_KEY);
+    if (!ghToken) {
+      showToast('⚠️ Configura prima il GitHub Token');
       return;
     }
 
@@ -368,41 +368,46 @@
     btn.textContent = '⏳ Invio in corso…';
     statusEl.style.display = 'flex';
     statusEl.className = 'status-row info';
-    statusEl.textContent = '📡 Connessione a OneSignal…';
+    statusEl.textContent = '📡 Avvio workflow GitHub…';
 
     try {
-      const res = await fetch('https://onesignal.com/api/v1/notifications', {
+      const res = await fetch(`https://api.github.com/repos/${REPO}/dispatches`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Key ${apiKey}`
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `token ${ghToken}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          app_id: APP_ID,
-          included_segments: ['All'],
-          headings: { it: title, en: title },
-          contents: { it: body,  en: body  },
-          url: url,
-          ttl: 86400
+          event_type: 'send-notification',
+          client_payload: { title, body, url }
         })
       });
 
-      const data = await res.json();
-
-      if (res.ok && data.id) {
+      if (res.status === 204) {
         statusEl.className = 'status-row success';
-        statusEl.textContent = `✅ Notifica inviata a ${data.recipients || 0} destinatari (ID: ${data.id.slice(0,8)}…)`;
+        statusEl.textContent = '✅ Notifica in elaborazione — arriverà entro pochi secondi';
         document.getElementById('notif-title').value = '';
         document.getElementById('notif-body').value  = '';
         document.getElementById('notif-url').value   = '';
         document.getElementById('title-counter').textContent = '0 / 60';
         document.getElementById('body-counter').textContent  = '0 / 200';
-        addToHistory(title, body, data.recipients || 0);
-        showToast(`🚀 Inviata a ${data.recipients || 0} condomini!`);
-      } else {
-        const errMsg = data.errors ? data.errors.join(', ') : (data.error || 'Errore sconosciuto');
+        addToHistory(title, body, '—');
+        showToast('🚀 Notifica inviata ai condomini!');
+      } else if (res.status === 401) {
         statusEl.className = 'status-row error';
-        statusEl.textContent = `❌ Errore: ${errMsg}`;
+        statusEl.textContent = '❌ Token GitHub non valido o scaduto';
+        showToast('❌ Token non valido');
+      } else if (res.status === 404) {
+        statusEl.className = 'status-row error';
+        statusEl.textContent = '❌ Repository non trovato o token senza permesso repo';
+        showToast('❌ Errore 404');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        const msg = data.message || `HTTP ${res.status}`;
+        statusEl.className = 'status-row error';
+        statusEl.textContent = `❌ Errore: ${msg}`;
         showToast('❌ Invio fallito');
       }
     } catch (err) {
