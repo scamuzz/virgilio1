@@ -350,55 +350,59 @@
   <!-- OneSignal SDK -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
+  let oneSignalReady = false;
+
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "3cc6b0c1-7285-4497-95b3-6a6dd57a87d8",
     });
+    oneSignalReady = true;
+    refreshNotifyUI();
   });
+
+  async function refreshNotifyUI() {
+    const bar = document.getElementById('notify-bar');
+    const btn = document.getElementById('notify-btn');
+    if (!bar || !btn) return;
+
+    // mostra la barra solo se le notifiche push sono supportate
+    if (!('Notification' in window)) return;
+
+    bar.style.display = 'flex';
+
+    if (!oneSignalReady) return;
+
+    const opted = OneSignal.User.PushSubscription.optedIn;
+    if (opted) {
+      btn.textContent = '✅ Attive';
+      btn.classList.add('active');
+    } else {
+      btn.textContent = '🔔 Attiva';
+      btn.classList.remove('active');
+    }
+  }
+
+  async function toggleNotify() {
+    const btn = document.getElementById('notify-btn');
+    if (!btn) return;
+
+    if (!oneSignalReady) {
+      btn.textContent = '⏳ Caricamento…';
+      return;
+    }
+
+    const opted = OneSignal.User.PushSubscription.optedIn;
+    if (opted) {
+      await OneSignal.User.PushSubscription.optOut();
+    } else {
+      await OneSignal.Notifications.requestPermission();
+      if (Notification.permission === 'granted') {
+        await OneSignal.User.PushSubscription.optIn();
+      }
+    }
+    await refreshNotifyUI();
+  }
 </script>
-    async function refreshNotifyUI() {
-      const bar = document.getElementById('notify-bar');
-      const btn = document.getElementById('notify-btn');
-      if (!bar || !btn) return;
-
-      // mostra la barra solo se le notifiche push sono supportate
-      if (!('Notification' in window)) return;
-
-      bar.style.display = 'flex';
-
-      if (!oneSignalReady) return;
-
-      const opted = OneSignal.User.PushSubscription.optedIn;
-      if (opted) {
-        btn.textContent = '✅ Attive';
-        btn.classList.add('active');
-      } else {
-        btn.textContent = '🔔 Attiva';
-        btn.classList.remove('active');
-      }
-    }
-
-    async function toggleNotify() {
-      const btn = document.getElementById('notify-btn');
-      if (!btn) return;
-
-      if (!oneSignalReady) {
-        btn.textContent = '⏳ Caricamento…';
-        return;
-      }
-
-      const opted = OneSignal.User.PushSubscription.optedIn;
-      if (opted) {
-        await OneSignal.User.PushSubscription.optOut();
-      } else {
-        await OneSignal.Notifications.requestPermission();
-        if (Notification.permission === 'granted') {
-          await OneSignal.User.PushSubscription.optIn();
-        }
-      }
-      await refreshNotifyUI();
-    }
-  </script>
 </body>
 </html>
