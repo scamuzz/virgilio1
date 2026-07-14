@@ -44,6 +44,10 @@ self.addEventListener('activate', event => {
 
 // Fetch: network-first for HTML, cache-first for assets
 self.addEventListener('fetch', event => {
+  // Skip non-GET requests (POST, etc.) and cross-origin requests
+  if (event.request.method !== 'GET') return;
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
   const url = new URL(event.request.url);
   const isHtml = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
 
