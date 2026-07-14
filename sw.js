@@ -1,5 +1,3 @@
-importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js');
-
 const CACHE_NAME = 'virgilio1-v2';
 const ASSETS = [
   '/virgilio1/',
@@ -44,7 +42,13 @@ self.addEventListener('activate', event => {
 
 // Fetch: network-first for HTML, cache-first for assets
 self.addEventListener('fetch', event => {
+  // Only handle GET requests; let POST/PUT/DELETE (e.g. OneSignal API) pass through unchanged
+  if (event.request.method !== 'GET') return;
+
   const url = new URL(event.request.url);
+
+  // Only intercept same-origin requests; skip external CDNs and APIs (e.g. onesignal.com)
+  if (url.origin !== self.location.origin) return;
   const isHtml = url.pathname.endsWith('.html') || url.pathname.endsWith('/');
 
   if (isHtml) {
