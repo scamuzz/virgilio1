@@ -32,20 +32,25 @@ jobs:
               print("ERRORE: secret ONESIGNAL_REST_API_KEY non configurato")
               sys.exit(1)
 
-          exact_match = re.match(rf"^{re.escape(app_name)}$", title, flags=re.IGNORECASE)
-          em_match = re.match(rf"^{re.escape(app_name)}\s+—\s*(.*)$", title, flags=re.IGNORECASE)
-          hy_match = re.match(rf"^{re.escape(app_name)}\s+-\s*(.*)$", title, flags=re.IGNORECASE)
+          exact_pattern = re.compile(rf"^{re.escape(app_name)}$", flags=re.IGNORECASE)
+          prefixed_patterns = (
+              ("—", re.compile(rf"^{re.escape(app_name)}\s+—\s*(.*)$", flags=re.IGNORECASE)),
+              ("-", re.compile(rf"^{re.escape(app_name)}\s+-\s*(.*)$", flags=re.IGNORECASE)),
+          )
 
-          if exact_match:
+          if exact_pattern.match(title):
               notif_title = app_name
-          elif em_match:
-              remainder = (em_match.group(1) or "").strip()
-              notif_title = app_name if not remainder else f"{app_name} — {remainder}"
-          elif hy_match:
-              remainder = (hy_match.group(1) or "").strip()
-              notif_title = app_name if not remainder else f"{app_name} - {remainder}"
           else:
-              notif_title = f"{app_name} — {title}"
+              notif_title = None
+              for separator, pattern in prefixed_patterns:
+                  match = pattern.match(title)
+                  if not match:
+                      continue
+                  remainder = (match.group(1) or "").strip()
+                  notif_title = app_name if not remainder else f"{app_name} {separator} {remainder}"
+                  break
+              if not notif_title:
+                  notif_title = f"{app_name} — {title}"
 
           payload = {
               "app_id": "fc5206f6-d2c3-4c3a-aed3-6565679d422b",
