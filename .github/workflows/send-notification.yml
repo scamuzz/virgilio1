@@ -16,7 +16,7 @@ jobs:
           URL: ${{ github.event.client_payload.url }}
         run: |
           python3 - <<'EOF'
-          import os, json, urllib.request, sys
+          import os, re, json, urllib.request, sys
 
           title = os.environ.get("TITLE", "").strip()
           body  = os.environ.get("BODY",  "").strip()
@@ -32,18 +32,17 @@ jobs:
               print("ERRORE: secret ONESIGNAL_REST_API_KEY non configurato")
               sys.exit(1)
 
-          app_name_cf = app_name.casefold()
-          title_cf = title.casefold()
-          em_prefix = f"{app_name} — "
-          hy_prefix = f"{app_name} - "
+          exact_match = re.match(rf"^{re.escape(app_name)}$", title, flags=re.IGNORECASE)
+          em_match = re.match(rf"^{re.escape(app_name)}\s+—\s*(.*)$", title, flags=re.IGNORECASE)
+          hy_match = re.match(rf"^{re.escape(app_name)}\s+-\s*(.*)$", title, flags=re.IGNORECASE)
 
-          if title_cf == app_name_cf:
+          if exact_match:
               notif_title = app_name
-          elif title_cf.startswith(em_prefix.casefold()):
-              remainder = title[len(em_prefix):].strip()
+          elif em_match:
+              remainder = (em_match.group(1) or "").strip()
               notif_title = app_name if not remainder else f"{app_name} — {remainder}"
-          elif title_cf.startswith(hy_prefix.casefold()):
-              remainder = title[len(hy_prefix):].strip()
+          elif hy_match:
+              remainder = (hy_match.group(1) or "").strip()
               notif_title = app_name if not remainder else f"{app_name} - {remainder}"
           else:
               notif_title = f"{app_name} — {title}"
