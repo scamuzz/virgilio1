@@ -252,7 +252,7 @@
     <button class="notify-btn" id="notify-btn" onclick="toggleNotify()">Attiva</button>
   </div>
   <div class="install-app-banner" id="install-app-banner">
-    <span><span role="img" aria-label="icona telefono">📲</span> Per attivare le notifiche installa l'app sul tuo dispositivo.</span>
+    <span><span aria-hidden="true">📲</span> Per attivare le notifiche installa l'app sul tuo dispositivo.</span>
     <a href="https://support.google.com/chrome/answer/9658361?hl=it" target="_blank" rel="noopener noreferrer" aria-label="Apri istruzioni di installazione in una nuova scheda">Istruzioni</a>
   </div>
 
@@ -359,7 +359,7 @@
 
   <script>
     function isAppMode() {
-      const standaloneMedia = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+      const standaloneMedia = window.matchMedia('(display-mode: standalone)').matches;
       const iosStandalone = window.navigator.standalone === true;
       return standaloneMedia || iosStandalone;
     }
