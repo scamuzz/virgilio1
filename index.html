@@ -197,6 +197,26 @@
       background: #e8f5e9; color: #2e7d32;
       box-shadow: none; cursor: default; transform: none;
     }
+    .install-app-banner {
+      margin-bottom: 16px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      color: #5d4037;
+    }
+    .install-app-banner a {
+      color: #01579b;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .install-app-banner a:hover { text-decoration: underline; }
     #notify-bar { display: none; } /* shown via JS when supported */
   </style>
 </head>
@@ -230,6 +250,10 @@
       Ricevi avvisi in tempo reale
     </div>
     <button class="notify-btn" id="notify-btn" onclick="toggleNotify()">Attiva</button>
+  </div>
+  <div class="install-app-banner" id="install-app-banner">
+    <span>📲 Per attivare le notifiche installa l'app sul tuo dispositivo.</span>
+    <a href="https://support.google.com/chrome/answer/9658361?hl=it" target="_blank" rel="noopener noreferrer">Istruzioni</a>
   </div>
 
   
@@ -334,14 +358,27 @@
 <div class="page-footer">🏢 Condominio Virgilio 1 &nbsp;•&nbsp; Portale Condominiale &nbsp;•&nbsp; <a href="admin.html" style="color:#aabbc8;text-decoration:none;">Admin</a></div>
 
   <script>
-    // Mostra la barra notifiche subito se il browser supporta le push,
-    // senza aspettare il caricamento di OneSignal SDK.
-    if ('Notification' in window && 'serviceWorker' in navigator) {
-      document.addEventListener('DOMContentLoaded', () => {
-        const bar = document.getElementById('notify-bar');
-        if (bar) bar.style.display = 'flex';
-      });
+    function isAppMode() {
+      const standaloneMedia = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+      const iosStandalone = window.navigator.standalone === true;
+      return standaloneMedia || iosStandalone;
     }
+
+    function showTopNotificationUI() {
+      const notifyBar = document.getElementById('notify-bar');
+      const installBanner = document.getElementById('install-app-banner');
+      if (!notifyBar || !installBanner) return;
+
+      if (isAppMode()) {
+        installBanner.style.display = 'none';
+        notifyBar.style.display = ('Notification' in window && 'serviceWorker' in navigator) ? 'flex' : 'none';
+      } else {
+        notifyBar.style.display = 'none';
+        installBanner.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', showTopNotificationUI);
   </script>
 
   <!-- OneSignal SDK -->
@@ -367,8 +404,12 @@
     const btn = document.getElementById('notify-btn');
     if (!bar || !btn) return;
 
+    showTopNotificationUI();
+
+    if (!isAppMode()) return;
+
     // mostra la barra solo se le notifiche push sono supportate
-    if (!('Notification' in window)) return;
+    if (!('Notification' in window && 'serviceWorker' in navigator)) return;
 
     bar.style.display = 'flex';
 
