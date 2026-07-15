@@ -33,7 +33,8 @@ jobs:
               sys.exit(1)
 
           if title.lower().startswith(app_name.lower()):
-              notif_title = title
+              remainder = title[len(app_name):].lstrip(" —-")
+              notif_title = app_name if not remainder else f"{app_name} — {remainder}"
           else:
               notif_title = f"{app_name} — {title}"
 
