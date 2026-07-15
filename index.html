@@ -211,6 +211,7 @@
       color: #5d4037;
     }
     .install-app-text { flex: 1; margin: 0; }
+    .install-app-hint { display: inline-block; margin-top: 2px; }
     .install-app-banner a {
       color: #01579b;
       font-weight: 700;
@@ -253,7 +254,10 @@
     <button class="notify-btn" id="notify-btn" onclick="toggleNotify()">Attiva</button>
   </div>
   <div class="install-app-banner" id="install-app-banner">
-    <p class="install-app-text"><span aria-hidden="true">📲</span> Per attivare le notifiche, installa l'app sul tuo dispositivo. Su iPhone/iPad apri in Safari e usa Condividi → Aggiungi alla schermata Home.</p>
+    <p class="install-app-text">
+      <span aria-hidden="true">📲</span> Per attivare le notifiche, installa l'app sul tuo dispositivo.<br>
+      <span class="install-app-hint">Su iPhone/iPad: apri in Safari e usa Condividi → Aggiungi alla schermata Home.</span>
+    </p>
     <a href="https://support.google.com/chrome/answer/9658361?hl=it" target="_blank" rel="noopener noreferrer" aria-label="Istruzioni per l'installazione">Istruzioni</a>
   </div>
 
