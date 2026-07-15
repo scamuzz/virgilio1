@@ -16,12 +16,13 @@ jobs:
           URL: ${{ github.event.client_payload.url }}
         run: |
           python3 - <<'EOF'
-          import os, json, urllib.request, sys
+          import os, re, json, urllib.request, sys
 
           title = os.environ.get("TITLE", "").strip()
           body  = os.environ.get("BODY",  "").strip()
           url   = os.environ.get("URL",   "").strip() or "https://scamuzz.github.io/virgilio1/"
           key   = os.environ.get("ONESIGNAL_KEY", "").strip()
+          app_name = "Virgilio 1"
 
           if not title or not body:
               print("ERRORE: titolo o messaggio mancante")
@@ -31,10 +32,30 @@ jobs:
               print("ERRORE: secret ONESIGNAL_REST_API_KEY non configurato")
               sys.exit(1)
 
+          exact_pattern = re.compile(rf"^{re.escape(app_name)}$", flags=re.IGNORECASE)
+          prefixed_patterns = (
+              ("—", re.compile(rf"^{re.escape(app_name)}\s+—\s*(.*)$", flags=re.IGNORECASE)),
+              ("-", re.compile(rf"^{re.escape(app_name)}\s+-\s*(.*)$", flags=re.IGNORECASE)),
+          )
+
+          if exact_pattern.match(title):
+              notif_title = app_name
+          else:
+              notif_title = None
+              for separator, pattern in prefixed_patterns:
+                  match = pattern.match(title)
+                  if not match:
+                      continue
+                  remainder = (match.group(1) or "").strip()
+                  notif_title = app_name if not remainder else f"{app_name} {separator} {remainder}"
+                  break
+              if not notif_title:
+                  notif_title = f"{app_name} — {title}"
+
           payload = {
               "app_id": "fc5206f6-d2c3-4c3a-aed3-6565679d422b",
               "included_segments": ["All"],
-              "headings": {"it": title, "en": title},
+              "headings": {"it": notif_title, "en": notif_title},
               "contents": {"it": body,  "en": body},
               "url": url,
               "ttl": 86400
