@@ -22,6 +22,7 @@ jobs:
           body  = os.environ.get("BODY",  "").strip()
           url   = os.environ.get("URL",   "").strip() or "https://scamuzz.github.io/virgilio1/"
           key   = os.environ.get("ONESIGNAL_KEY", "").strip()
+          app_name = "Virgilio 1"
 
           if not title or not body:
               print("ERRORE: titolo o messaggio mancante")
@@ -31,10 +32,15 @@ jobs:
               print("ERRORE: secret ONESIGNAL_REST_API_KEY non configurato")
               sys.exit(1)
 
+          if title.lower().startswith(app_name.lower()):
+              notif_title = title
+          else:
+              notif_title = f"{app_name} — {title}"
+
           payload = {
               "app_id": "fc5206f6-d2c3-4c3a-aed3-6565679d422b",
               "included_segments": ["All"],
-              "headings": {"it": title, "en": title},
+              "headings": {"it": notif_title, "en": notif_title},
               "contents": {"it": body,  "en": body},
               "url": url,
               "ttl": 86400
