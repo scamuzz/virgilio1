@@ -33,13 +33,14 @@ jobs:
               sys.exit(1)
 
           app_name_pattern = re.compile(
-              rf"^\s*{re.escape(app_name)}\s*(?:[—-]\s*)?(.*)$",
+              rf"^\s*{re.escape(app_name)}\s*(?:([—-])\s*)?(.*)$",
               re.IGNORECASE,
           )
           match = app_name_pattern.match(title)
           if match:
-              remainder = (match.group(1) or "").strip()
-              notif_title = app_name if not remainder else f"{app_name} — {remainder}"
+              separator = match.group(1) or "—"
+              remainder = (match.group(2) or "").strip()
+              notif_title = app_name if not remainder else f"{app_name} {separator} {remainder}"
           else:
               notif_title = f"{app_name} — {title}"
 
