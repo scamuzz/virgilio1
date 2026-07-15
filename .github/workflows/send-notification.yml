@@ -16,7 +16,7 @@ jobs:
           URL: ${{ github.event.client_payload.url }}
         run: |
           python3 - <<'EOF'
-          import os, json, urllib.request, sys
+          import os, re, json, urllib.request, sys
 
           title = os.environ.get("TITLE", "").strip()
           body  = os.environ.get("BODY",  "").strip()
@@ -32,13 +32,13 @@ jobs:
               print("ERRORE: secret ONESIGNAL_REST_API_KEY non configurato")
               sys.exit(1)
 
-          if title.lower().startswith(app_name.lower()):
-              remainder = title[len(app_name):]
-              for sep in (" — ", " - ", "— ", "- ", " —", " -", "—", "-", " "):
-                  if remainder.startswith(sep):
-                      remainder = remainder[len(sep):]
-                      break
-              remainder = remainder.strip()
+          app_name_pattern = re.compile(
+              rf"^\s*{re.escape(app_name)}\s*(?:[—-]\s*)?(.*)$",
+              re.IGNORECASE,
+          )
+          match = app_name_pattern.match(title)
+          if match:
+              remainder = (match.group(1) or "").strip()
               notif_title = app_name if not remainder else f"{app_name} — {remainder}"
           else:
               notif_title = f"{app_name} — {title}"
