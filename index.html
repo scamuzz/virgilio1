@@ -331,12 +331,6 @@
 <div class="page-footer">🏢 Condominio Virgilio 1 &nbsp;•&nbsp; Portale Condominiale &nbsp;•&nbsp; <a href="admin.html" style="color:#aabbc8;text-decoration:none;">Admin</a></div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js');
-      });
-    }
-
     // Mostra la barra notifiche subito se il browser supporta le push,
     // senza aspettare il caricamento di OneSignal SDK.
     if ('Notification' in window && 'serviceWorker' in navigator) {
@@ -356,7 +350,7 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "fc5206f6-d2c3-4c3a-aed3-6565679d422b",
-      serviceWorkerPath: "/virgilio1/OneSignalSDKWorker.js",
+      serviceWorkerPath: "/virgilio1/sw.js",
       serviceWorkerParam: {
         scope: "/virgilio1/"
       }
