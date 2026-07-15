@@ -400,18 +400,13 @@
   });
 
   async function refreshNotifyUI() {
-    const bar = document.getElementById('notify-bar');
     const btn = document.getElementById('notify-btn');
-    if (!bar || !btn) return;
-
-    showTopNotificationUI();
+    if (!btn) return;
 
     if (!isAppMode()) return;
 
     // mostra la barra solo se le notifiche push sono supportate
     if (!('Notification' in window && 'serviceWorker' in navigator)) return;
-
-    bar.style.display = 'flex';
 
     if (!oneSignalReady) return;
 
