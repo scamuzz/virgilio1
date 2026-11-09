@@ -330,23 +330,32 @@
       return;
     }
 
-    container.innerHTML = entries.map(([id, p]) => {
-      const isMe = myName() && p.autore.toLowerCase() === myNameLc();
-      return `
-        <div class="post-card${isMe ? ' mine' : ''}">
-          <div class="post-header">
-            <div class="post-meta">
-              <span class="post-author">${esc(p.autore)}</span>
-              ${isMe ? '<span class="me-tag">Tu</span>' : ''}
-              <span class="post-time">• ${formatDate(p.ts)}</span>
-            </div>
-            ${isMe ? `<button class="post-delete" data-id="${id}" title="Elimina">🗑️</button>` : ''}
-          </div>
-          ${p.titolo ? `<div class="post-title">${esc(p.titolo)}</div>` : ''}
-          <div class="post-text">${esc(p.testo)}</div>
-        </div>`;
-    }).join('');
+   container.innerHTML = entries.map(([id, p]) => {
+  const autore = typeof p?.autore === 'string' ? p.autore : 'Anonimo';
+  const testo  = typeof p?.testo === 'string' ? p.testo : '';
+  const titolo = typeof p?.titolo === 'string' ? p.titolo : '';
+  const isMe = myName() && autore.toLowerCase() === myNameLc();
+  const data = Number.isFinite(p?.ts) && p.ts > 0
+    ? formatDate(p.ts)
+    : 'Data non disponibile';
 
+  return `
+    <div class="post-card${isMe ? ' mine' : ''}">
+      <div class="post-header">
+        <div class="post-meta">
+          <span class="post-author">${esc(autore)}</span>
+          ${isMe ? '<span class="me-tag">Tu</span>' : ''}
+          <span class="post-time">• ${data}</span>
+        </div>
+        ${isMe ? `<button class="post-delete" data-id="${id}" title="Elimina">🗑️</button>` : ''}
+      </div>
+      ${titolo ? `<div class="post-title">${esc(titolo)}</div>` : ''}
+      <div class="post-text">${esc(testo)}</div>
+    </div>`;
+}).join('');
+
+
+    
     container.querySelectorAll('.post-delete').forEach(btn =>
       btn.addEventListener('click', () => {
         if (confirm('Eliminare questo avviso?')) {
