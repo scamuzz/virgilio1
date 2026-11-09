@@ -210,6 +210,14 @@
     }
     .install-app-text { flex: 1; margin: 0; }
     #notify-bar { display: none; } /* shown via JS when supported */
+    .card-icon-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+}
   </style>
 </head>
 <body>
@@ -263,7 +271,7 @@
     <!-- ✅ ATTIVO -->
     <a class="menu-card live" href="piscina2.html">
       <span class="badge badge-live">Attivo</span>
-      <span class="card-icon"><img src ="icons/piscina.jpg" /> 🏊</span>
+      <span class="card-icon"><img src ="icons/piscina.jpg" class="card-icon-img" /> 🏊</span>
       <div class="card-title">Piscina</div>
       <div class="card-desc">Manutenzioni settimanali • Estate</div>
     </a>
